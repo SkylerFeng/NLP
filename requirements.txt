@@ -1,0 +1,10 @@
+datasets
+pandas
+numpy
+pyyaml
+tqdm
+openai
+sentence-transformers
+scikit-learn
+matplotlib
+python-dotenv

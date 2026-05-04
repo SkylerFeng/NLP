@@ -1,0 +1,61 @@
+project:
+  name: semantic-similarity-llm-eval
+  seed: 42
+
+data:
+  # 可选值：
+  # sciq
+  # nq
+  # simple_questions_wiki
+  # truthfulQA
+  dataset: simple_questions_wiki
+
+  # 老师给的数据目录
+  data_root: processed_data
+  data_file: merged_fb.json
+
+  # 如果只想先测试，可以设置 sample_size: 20
+  # 如果想跑全量，改成 null
+  sample_size: 5000
+
+  prediction_dir: data/predictions
+  similarity_dir: data/similarity
+
+llm:
+  provider: qwen
+  model: qwen2.5-7b-instruct
+  temperature: 0.0
+  max_tokens: 64
+  sleep_seconds: 0.2
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  api_key_env: DASHSCOPE_API_KEY
+
+prediction:
+  # 老师给的数据文件
+  input_file: processed_data/sciq/merged_fb.json
+
+  # Qwen2.5-7B-Instruct 的预测结果输出
+  output_file: data/predictions/sciq_qwen25_7b_instruct_predictions_20.jsonl
+
+  use_support: false
+
+embedding:
+  models:
+    - sentence-transformers/all-MiniLM-L6-v2
+    - BAAI/bge-base-en-v1.5
+  batch_size: 32
+
+similarity:
+  input_file: data/predictions/sciq_qwen25_7b_instruct_predictions_20.jsonl
+  output_file: data/similarity/sciq_qwen25_7b_instruct_similarity_20.jsonl
+
+evaluation:
+  input_file: data/similarity/sciq_qwen25_7b_instruct_similarity_20.jsonl
+  similarity_threshold: 0.75
+  label_field: correct_label
+
+output:
+  results_dir: results
+  figure_dir: results/figures
+  table_dir: results/tables
+  failure_case_dir: results/failure_cases

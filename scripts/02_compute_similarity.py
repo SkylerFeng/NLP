@@ -1,0 +1,57 @@
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(PROJECT_ROOT))
+
+from src.compute_embeddings import create_embedding_model
+from src.compute_similarity import add_similarity_scores
+from src.correctness_labeling import label_correctness_for_records
+from src.utils import ensure_dir, load_config, load_jsonl, save_jsonl
+
+
+def main() -> None:
+    config = load_config("config.yaml")
+
+    input_file = config["similarity"]["input_file"]
+    output_file = config["similarity"]["output_file"]
+
+    embedding_models = config["embedding"]["models"]
+    batch_size = config["embedding"].get("batch_size", 32)
+
+    ensure_dir(Path(output_file).parent)
+
+    print(f"Loading predictions from: {input_file}")
+    records = load_jsonl(input_file)
+    print(f"Loaded {len(records)} records.")
+
+    print("Labeling correctness...")
+    records = label_correctness_for_records(
+        records,
+        prediction_field="prediction",
+        reference_field="ground_truth",
+        f1_threshold=0.8,
+    )
+
+    for model_name in embedding_models:
+        print(f"Computing similarity with embedding model: {model_name}")
+
+        embedding_model = create_embedding_model(model_name)
+
+        records = add_similarity_scores(
+            records=records,
+            embedding_model=embedding_model,
+            embedding_model_name=model_name,
+            batch_size=batch_size,
+            prediction_field="prediction",
+            reference_field="ground_truth",
+        )
+
+    print(f"Saving similarity results to: {output_file}")
+    save_jsonl(records, output_file)
+
+    print("Similarity computation finished.")
+
+
+if __name__ == "__main__":
+    main()
