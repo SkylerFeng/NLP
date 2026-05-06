@@ -1,0 +1,9 @@
+dataset,model,sampled_cases,automatic_label_artifact,automatic_label_artifact_pct,semantic_similarity_limitation,semantic_similarity_limitation_pct,low_similarity_false_negative,low_similarity_false_negative_pct,top_human_type
+results_nq,BGE,50,17,34.0,33,66.0,0,0.0,synonym_or_paraphrase_labeling_artifact
+results_nq,MiniLM,90,20,22.2,33,36.7,37,41.1,answer_containment_low_embedding_score
+results_sciq_5000,BGE,50,16,32.0,34,68.0,0,0.0,underspecified_or_overspecified_answer
+results_sciq_5000,MiniLM,87,19,21.8,34,39.1,34,39.1,answer_containment_low_embedding_score
+results_truthfulQA_500,BGE,50,26,52.0,24,48.0,0,0.0,synonym_or_paraphrase_labeling_artifact
+results_truthfulQA_500,MiniLM,30,12,40.0,16,53.3,2,6.7,synonym_or_paraphrase_labeling_artifact
+results_wiki,BGE,50,21,42.0,29,58.0,0,0.0,synonym_or_paraphrase_labeling_artifact
+results_wiki,MiniLM,85,24,28.2,29,34.1,32,37.6,answer_containment_low_embedding_score

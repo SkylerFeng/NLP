@@ -1,0 +1,7 @@
+dataset,model,failure_kind,human_category,count,percentage
+results_nq,BGE,high_similarity_wrong,automatic_label_artifact,17,34.0
+results_nq,BGE,high_similarity_wrong,semantic_similarity_limitation,33,66.0
+results_nq,MiniLM,high_similarity_wrong,automatic_label_artifact,17,34.0
+results_nq,MiniLM,high_similarity_wrong,semantic_similarity_limitation,33,66.0
+results_nq,MiniLM,low_similarity_correct,automatic_label_artifact,3,7.5
+results_nq,MiniLM,low_similarity_correct,low_similarity_false_negative,37,92.5

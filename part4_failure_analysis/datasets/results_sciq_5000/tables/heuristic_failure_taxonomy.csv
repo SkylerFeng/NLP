@@ -1,0 +1,16 @@
+dataset,model,failure_kind,heuristic_type,count,percentage
+results_sciq_5000,BGE,high_similarity_wrong,synonym_or_paraphrase_labeling_artifact,130,27.1
+results_sciq_5000,BGE,high_similarity_wrong,underspecified_or_overspecified_answer,121,25.3
+results_sciq_5000,BGE,high_similarity_wrong,semantic_relatedness_not_correctness,93,19.4
+results_sciq_5000,BGE,high_similarity_wrong,other_or_true_semantic_error,78,16.3
+results_sciq_5000,BGE,high_similarity_wrong,morphology_or_inflection,42,8.8
+results_sciq_5000,BGE,high_similarity_wrong,numeric_equivalence,15,3.1
+results_sciq_5000,MiniLM,high_similarity_wrong,underspecified_or_overspecified_answer,72,29.9
+results_sciq_5000,MiniLM,high_similarity_wrong,synonym_or_paraphrase_labeling_artifact,50,20.7
+results_sciq_5000,MiniLM,high_similarity_wrong,morphology_or_inflection,40,16.6
+results_sciq_5000,MiniLM,high_similarity_wrong,semantic_relatedness_not_correctness,33,13.7
+results_sciq_5000,MiniLM,high_similarity_wrong,other_or_true_semantic_error,31,12.9
+results_sciq_5000,MiniLM,high_similarity_wrong,numeric_equivalence,15,6.2
+results_sciq_5000,MiniLM,low_similarity_correct,answer_containment_low_embedding_score,22,59.5
+results_sciq_5000,MiniLM,low_similarity_correct,overly_long_answer_context_dilution,12,32.4
+results_sciq_5000,MiniLM,low_similarity_correct,numeric_equivalence,3,8.1

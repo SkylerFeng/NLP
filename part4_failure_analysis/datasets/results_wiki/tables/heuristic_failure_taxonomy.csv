@@ -1,0 +1,16 @@
+dataset,model,failure_kind,heuristic_type,count,percentage
+results_wiki,BGE,high_similarity_wrong,synonym_or_paraphrase_labeling_artifact,133,27.7
+results_wiki,BGE,high_similarity_wrong,underspecified_or_overspecified_answer,122,25.4
+results_wiki,BGE,high_similarity_wrong,semantic_relatedness_not_correctness,88,18.3
+results_wiki,BGE,high_similarity_wrong,other_or_true_semantic_error,77,16.0
+results_wiki,BGE,high_similarity_wrong,morphology_or_inflection,44,9.1
+results_wiki,BGE,high_similarity_wrong,numeric_equivalence,17,3.5
+results_wiki,MiniLM,high_similarity_wrong,underspecified_or_overspecified_answer,68,27.2
+results_wiki,MiniLM,high_similarity_wrong,synonym_or_paraphrase_labeling_artifact,53,21.2
+results_wiki,MiniLM,high_similarity_wrong,morphology_or_inflection,43,17.2
+results_wiki,MiniLM,high_similarity_wrong,semantic_relatedness_not_correctness,36,14.4
+results_wiki,MiniLM,high_similarity_wrong,other_or_true_semantic_error,33,13.2
+results_wiki,MiniLM,high_similarity_wrong,numeric_equivalence,17,6.8
+results_wiki,MiniLM,low_similarity_correct,answer_containment_low_embedding_score,24,68.6
+results_wiki,MiniLM,low_similarity_correct,overly_long_answer_context_dilution,8,22.9
+results_wiki,MiniLM,low_similarity_correct,numeric_equivalence,3,8.6

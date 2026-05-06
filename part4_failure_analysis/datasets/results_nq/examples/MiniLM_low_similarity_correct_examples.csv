@@ -1,0 +1,9 @@
+dataset,model,failure_kind,id,question,ground_truth,prediction,token_f1,similarity,heuristic_type
+results_nq,MiniLM,low_similarity_correct,sample_1738,"In what process is atp created by glycolysis, without oxygen?",fermentation,Aerobic respiration not applicable here; ATP is produced in glycolysis during an,0.095,0.499,overly_long_answer_context_dilution
+results_nq,MiniLM,low_similarity_correct,sample_1659,What is the fracture called when rocks on both sides move?,a fault,Strike-slip fault,0.500,0.499,answer_containment_low_embedding_score
+results_nq,MiniLM,low_similarity_correct,sample_1067,An inclined plane is a good example of what kind of machine?,simple,simple machine,0.667,0.497,answer_containment_low_embedding_score
+results_nq,MiniLM,low_similarity_correct,sample_4360,What is algae easier to covert into that corn is currently used for?,fuel,biofuel,0.000,0.494,answer_containment_low_embedding_score
+results_nq,MiniLM,low_similarity_correct,sample_1394,The logistics of carrying out cellular metabolism sets limits on what physical property of the cell?,size,Cell size,0.667,0.491,answer_containment_low_embedding_score
+results_nq,MiniLM,low_similarity_correct,sample_3366,"Most hormones are controlled by what type of feedback, which causes the hormone to decrease its own production?",negative,Negative feedback,0.667,0.488,answer_containment_low_embedding_score
+results_nq,MiniLM,low_similarity_correct,sample_2146,"In the case of the thyroid hormone pathway, thyroid hormone itself carries out what kind of feedback?",negative,Negative feedback,0.667,0.488,answer_containment_low_embedding_score
+results_nq,MiniLM,low_similarity_correct,sample_3533,"Plants obtain their energy from the sun through photosynthesis , what do animals obtain their energy from?",organisms,Animals obtain their energy from consuming other organisms.,0.222,0.484,overly_long_answer_context_dilution

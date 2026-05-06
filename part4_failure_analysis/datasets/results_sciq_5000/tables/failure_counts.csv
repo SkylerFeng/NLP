@@ -1,0 +1,5 @@
+dataset,model,failure_kind,count,avg_similarity,avg_token_f1
+results_sciq_5000,BGE,high_similarity_wrong,479,0.870,0.337
+results_sciq_5000,MiniLM,high_similarity_wrong,241,0.875,0.336
+results_sciq_5000,BGE,low_similarity_correct,0,0.000,0.000
+results_sciq_5000,MiniLM,low_similarity_correct,37,0.416,0.362

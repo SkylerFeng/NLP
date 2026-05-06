@@ -1,0 +1,9 @@
+dataset,model,failure_kind,id,question,ground_truth,prediction,token_f1,similarity,heuristic_type
+results_sciq_5000,MiniLM,high_similarity_wrong,sample_1016,What type of thin lava forms shapes and tubes as it flows?,pāhoehoe,Pahoehoe,0.000,1.000,semantic_relatedness_not_correctness
+results_sciq_5000,MiniLM,high_similarity_wrong,sample_2502,The elements in group 2 are called what?,alkaline earth metals,Alkali earth metals,0.667,0.984,synonym_or_paraphrase_labeling_artifact
+results_sciq_5000,MiniLM,high_similarity_wrong,sample_805,What creates charged regions in a water molecule?,polar covalent bonds,Polar covalent bond,0.667,0.979,morphology_or_inflection
+results_sciq_5000,MiniLM,high_similarity_wrong,sample_3536,The periodic table is an arrangement of the elements in order of increasing what?,atomic numbers,atomic number,0.500,0.976,morphology_or_inflection
+results_sciq_5000,MiniLM,high_similarity_wrong,sample_2072,What do you call taxes placed on products that produce carbon dioxide?,carbon taxes,Carbon tax,0.500,0.976,morphology_or_inflection
+results_sciq_5000,MiniLM,high_similarity_wrong,sample_1204,What type of disease is caused by pathogens?,infectious diseases,Infectious disease,0.500,0.973,synonym_or_paraphrase_labeling_artifact
+results_sciq_5000,MiniLM,high_similarity_wrong,sample_1042,The chemical behavior of elements can largely be explained by what?,electron configurations,Electron configuration,0.500,0.969,morphology_or_inflection
+results_sciq_5000,MiniLM,high_similarity_wrong,sample_3625,What is used to measure current through a resistor?,ammeters,Ammeter,0.000,0.968,morphology_or_inflection

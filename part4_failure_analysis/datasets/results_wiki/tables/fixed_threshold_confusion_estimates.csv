@@ -1,0 +1,3 @@
+dataset,model,fixed_threshold,total,estimated_tp,estimated_fp,estimated_tn,estimated_fn,fixed_accuracy,fixed_precision,fixed_recall,fixed_f1
+results_wiki,MiniLM,0.75,5000,2632,330,1741,297,0.875,0.889,0.899,0.894
+results_wiki,BGE,0.75,5000,2847,720,1351,82,0.840,0.798,0.972,0.877

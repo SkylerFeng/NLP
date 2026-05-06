@@ -1,0 +1,16 @@
+dataset,model,failure_kind,heuristic_type,count,percentage
+results_nq,BGE,high_similarity_wrong,synonym_or_paraphrase_labeling_artifact,140,28.4
+results_nq,BGE,high_similarity_wrong,underspecified_or_overspecified_answer,119,24.1
+results_nq,BGE,high_similarity_wrong,semantic_relatedness_not_correctness,94,19.1
+results_nq,BGE,high_similarity_wrong,other_or_true_semantic_error,78,15.8
+results_nq,BGE,high_similarity_wrong,morphology_or_inflection,43,8.7
+results_nq,BGE,high_similarity_wrong,numeric_equivalence,19,3.9
+results_nq,MiniLM,high_similarity_wrong,underspecified_or_overspecified_answer,67,26.6
+results_nq,MiniLM,high_similarity_wrong,synonym_or_paraphrase_labeling_artifact,54,21.4
+results_nq,MiniLM,high_similarity_wrong,morphology_or_inflection,41,16.3
+results_nq,MiniLM,high_similarity_wrong,semantic_relatedness_not_correctness,38,15.1
+results_nq,MiniLM,high_similarity_wrong,other_or_true_semantic_error,34,13.5
+results_nq,MiniLM,high_similarity_wrong,numeric_equivalence,18,7.1
+results_nq,MiniLM,low_similarity_correct,answer_containment_low_embedding_score,25,62.5
+results_nq,MiniLM,low_similarity_correct,overly_long_answer_context_dilution,12,30.0
+results_nq,MiniLM,low_similarity_correct,numeric_equivalence,3,7.5

@@ -1,0 +1,17 @@
+dataset,model,failure_kind,count,avg_similarity,avg_token_f1
+results_nq,BGE,high_similarity_wrong,493,0.870,0.337
+results_nq,MiniLM,high_similarity_wrong,252,0.876,0.322
+results_nq,BGE,low_similarity_correct,0,0.000,0.000
+results_nq,MiniLM,low_similarity_correct,40,0.421,0.372
+results_sciq_5000,BGE,high_similarity_wrong,479,0.870,0.337
+results_sciq_5000,MiniLM,high_similarity_wrong,241,0.875,0.336
+results_sciq_5000,BGE,low_similarity_correct,0,0.000,0.000
+results_sciq_5000,MiniLM,low_similarity_correct,37,0.416,0.362
+results_truthfulQA_500,BGE,high_similarity_wrong,52,0.875,0.371
+results_truthfulQA_500,MiniLM,high_similarity_wrong,28,0.866,0.287
+results_truthfulQA_500,BGE,low_similarity_correct,0,0.000,0.000
+results_truthfulQA_500,MiniLM,low_similarity_correct,2,0.394,0.250
+results_wiki,BGE,high_similarity_wrong,481,0.873,0.339
+results_wiki,MiniLM,high_similarity_wrong,250,0.876,0.324
+results_wiki,BGE,low_similarity_correct,0,0.000,0.000
+results_wiki,MiniLM,low_similarity_correct,35,0.419,0.354

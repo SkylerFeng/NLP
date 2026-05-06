@@ -1,0 +1,5 @@
+dataset,model,failure_kind,count,avg_similarity,avg_token_f1
+results_wiki,BGE,high_similarity_wrong,481,0.873,0.339
+results_wiki,MiniLM,high_similarity_wrong,250,0.876,0.324
+results_wiki,BGE,low_similarity_correct,0,0.000,0.000
+results_wiki,MiniLM,low_similarity_correct,35,0.419,0.354
