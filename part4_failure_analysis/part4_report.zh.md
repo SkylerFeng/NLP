@@ -3,7 +3,7 @@
 英文版见：[`part4_report.md`](part4_report.md)。
 
 ## 1. 目标与定义
-这里我们把 failure case 定义为：基于 similarity threshold 得到的正确/错误判断，与自动生成的 `correct_label` 不一致。
+Part 4 要求我们分析 embedding similarity 在哪些情况下失败，并提出改进方案。这里我们把 failure case 定义为：基于 similarity threshold 得到的正确/错误判断，与自动生成的 `correct_label` 不一致。
 
 - `high_similarity_wrong`：`correct_label = 0`，但 similarity 很高。
 - `low_similarity_correct`：`correct_label = 1`，但 similarity 很低。
@@ -61,7 +61,29 @@ BGE 在这些输出中没有 low-similarity-correct cases，但 high-similarity-
 - `semantic_similarity_limitation`：prediction 和 reference 语义相关，但不一定事实正确。
 - `low_similarity_false_negative`：prediction 包含或表达了正确答案，但 embedding similarity 偏低。
 
-## 6. 主要 Failure Type
+## 6. 相似度距离说明与具体例子
+这里的 similarity 是 prediction embedding 和 reference embedding 之间的 cosine similarity。为了更直观地解释 failure case，我们也使用一个简单的距离：
+
+```text
+distance = 1 - cosine_similarity
+```
+
+距离越小，表示两个答案在 embedding space 中越接近。`high_similarity_wrong` 的特点是：距离很小，但自动标签认为 prediction 错；`low_similarity_correct` 的特点是：距离很大，但自动标签认为 prediction 对。
+
+| 类别 | 数据集 | 模型 | Failure Kind | 参考答案 | 预测答案 | 相似度 | 距离 | 解释 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 自动标签缺陷 | SciQ | BGE | 高相似但标为错 | ovaries | Ovary | 0.895 | 0.105 | 单复数差异，自动标签过于严格。 |
+| 自动标签缺陷 | SciQ | BGE | 高相似但标为错 | four | 4 | 0.863 | 0.137 | 数字表达等价，标注前应做数字规范化。 |
+| 自动标签缺陷 | SciQ | BGE | 高相似但标为错 | wider pelvis | wider hips | 0.887 | 0.113 | 近义表达或术语说法差异。 |
+| 语义相似度局限 | SciQ | BGE | 高相似但标为错 | bone fractures | fractures | 0.891 | 0.109 | 预测相关但过泛，缺少 bone 这个关键限定。 |
+| 语义相似度局限 | SciQ | BGE | 高相似但标为错 | proto-oncogenes | Oncogenes | 0.835 | 0.165 | 相关生物术语，但并不是同一个答案。 |
+| 语义相似度局限 | SciQ | BGE | 高相似但标为错 | solar energy | Solar panels | 0.837 | 0.163 | 概念相关，但 energy source 与 device 的区别会影响正确性。 |
+| 低相似度假阴性 | SciQ | MiniLM | 低相似但标为对 | three | Three main types: elliptical, spiral, and irregular. | 0.190 | 0.810 | 正确短答案嵌在长句中。 |
+| 低相似度假阴性 | SciQ | MiniLM | 低相似但标为对 | negative | Partial negative charge | 0.377 | 0.623 | 包含参考答案，但额外上下文改变了句向量。 |
+| 低相似度假阴性 | SciQ | MiniLM | 低相似但标为对 | bacteria | Yogurt is made from milk fermented with bacteria. | 0.399 | 0.601 | 答案包含关系很清楚，但整句 embedding 被稀释。 |
+
+这些例子说明，同样是“小距离”，可能代表正确改写被自动标签误判，也可能代表 embedding 把“语义相关”误当成“事实正确”。而“大距离”也不一定代表答案错，它可能只是因为正确短答案被放进了更长的句子里。
+## 7. 主要 Failure Type
 | Dataset | Model | Failure Kind | Human Type | Count | % |
 | --- | --- | --- | --- | --- | --- |
 | NQ-like | BGE | high_similarity_wrong | synonym_or_paraphrase_labeling_artifact | 13 | 26.0 |
@@ -103,24 +125,43 @@ BGE 在这些输出中没有 low-similarity-correct cases，但 high-similarity-
 
 low-similarity-correct 主要出现在 MiniLM 中。这类样例通常是在较长 prediction 中包含了正确短答案，额外上下文稀释了整体句向量。
 
-## 7. 结论
+## 8. 结论
 - MiniLM 更保守，对正确和错误答案的分离更明显。
 - BGE 的语义匹配能力更强，但更容易把相关但不完整的答案打高分。
 - 很多表面上的错误其实是自动标签缺陷，而不是 LLM 真正答错。
 - 单一 cosine similarity threshold 可以作为筛选信号，但不足以作为最终 correctness evaluator。
 
-## 8. 改进方案
-更稳健的 evaluator 应该结合多种检查：
+## 9. 详细改进方案
+failure analysis 表明，改进方案不应该简单地抛弃 embedding similarity，而应该把它作为一个更完整 evaluator 的组成部分。
 
-1. 更强 normalization：大小写、标点/连字符、词形还原、数字词转换。
-2. Answer containment 和 answer extraction，尤其是 prediction 比 reference 更长时。
-3. Entity 或 keyword overlap，用来检查关键事实单元。
-4. 对长答案使用 sentence-level similarity。
-5. 对模糊的 high-similarity cases 使用 NLI 或 LLM judge 做事实一致性验证。
+### 9.1 Normalization and Canonicalization
+在生成 correctness label 或使用 similarity threshold 之前，先对 prediction 和 reference 做更强的规范化，包括：小写化、标点清理、连字符统一、单复数/词形还原、数字词转换，以及常见缩写展开，例如把 `CO2` 映射到 `carbon dioxide`。这可以直接修复 `ovary` vs. `ovaries`、`four` vs. `4`、`intra-plate` vs. `intraplate` 这类自动标签缺陷。
 
-一个可实现的 hybrid pipeline 是：先做 normalization 和 exact/containment 检查；再使用 dataset/model-specific threshold 的 embedding similarity；最后把 ambiguous cases 交给 verifier。
+### 9.2 面向长预测的 Answer Extraction
+对于 short-answer QA，很多 low-similarity-correct 是因为 prediction 是完整句子，而 reference 是短语。计算 embedding similarity 之前，应先从 prediction 中抽取最可能的答案片段。简单版本可以用 containment rule 和 noun phrase heuristic；更强版本可以让 LLM 把预测改写成最短答案。这能处理 `Three main types: elliptical, spiral, and irregular.` vs. `three` 这类样例。
 
-## 9. 可复现方式
+### 9.3 Hybrid Scoring
+可以把 embedding similarity 和词面/事实重叠结合起来：
+
+```text
+hybrid_score = 0.55 * embedding_similarity
+             + 0.20 * token_f1
+             + 0.15 * entity_or_keyword_overlap
+             + 0.10 * normalization_bonus
+```
+
+权重可以在小验证集上调参。这样做的目标是：既保留 embedding 对 paraphrase 的识别能力，又避免它给语义相关但不完整的答案过高分。
+
+### 9.4 Dataset- and Model-Specific Thresholds
+MiniLM 和 BGE 的最佳阈值并不相同。当前结果里，MiniLM 的 best threshold 大约在 0.70-0.76，而 BGE 往往需要 0.78-0.81。因此，不建议使用统一的 0.75 threshold。应针对每个 dataset 和 embedding model，用 validation F1 或 precision-recall trade-off 单独选择阈值。
+
+### 9.5 Ambiguity-Aware Verification
+一些样例不适合只靠 similarity 决定。例如：分数接近阈值、similarity 高但 entity overlap 低、prediction 明显比 reference 更短或更泛。这些样例可以交给 verifier，例如 NLI model 或 LLM judge，让它在 question context 下判断 prediction 是否 entail reference answer。
+
+### 9.6 预期效果
+Normalization 主要减少自动标签缺陷；answer extraction 主要减少 MiniLM 的 low-similarity false negatives；entity overlap 和 verifier 主要减少 BGE 因“语义相关但不正确”产生的 high-similarity wrong cases。这三个方向正好对应 human annotation 中发现的三大 failure 类别。
+
+## 10. 可复现方式
 在项目根目录运行：
 
 ```bash

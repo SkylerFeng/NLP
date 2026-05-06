@@ -116,6 +116,149 @@ def top_human_type_rows(human_type: list[dict]) -> list[dict]:
     return output
 
 
+def representative_failure_examples() -> list[dict]:
+    return [
+        {
+            "Category": "automatic_label_artifact",
+            "Dataset": "SciQ",
+            "Model": "BGE",
+            "Failure Kind": "high_similarity_wrong",
+            "Reference": "ovaries",
+            "Prediction": "Ovary",
+            "Similarity": "0.895",
+            "Distance": "0.105",
+            "Interpretation": "Singular/plural variation; the automatic label is too strict.",
+        },
+        {
+            "Category": "automatic_label_artifact",
+            "Dataset": "SciQ",
+            "Model": "BGE",
+            "Failure Kind": "high_similarity_wrong",
+            "Reference": "four",
+            "Prediction": "4",
+            "Similarity": "0.863",
+            "Distance": "0.137",
+            "Interpretation": "Numeric equivalence should be normalized before labeling.",
+        },
+        {
+            "Category": "automatic_label_artifact",
+            "Dataset": "SciQ",
+            "Model": "BGE",
+            "Failure Kind": "high_similarity_wrong",
+            "Reference": "wider pelvis",
+            "Prediction": "wider hips",
+            "Similarity": "0.887",
+            "Distance": "0.113",
+            "Interpretation": "Close paraphrase/anatomical wording difference.",
+        },
+        {
+            "Category": "semantic_similarity_limitation",
+            "Dataset": "SciQ",
+            "Model": "BGE",
+            "Failure Kind": "high_similarity_wrong",
+            "Reference": "bone fractures",
+            "Prediction": "fractures",
+            "Similarity": "0.891",
+            "Distance": "0.109",
+            "Interpretation": "Prediction is related but underspecified; it misses the bone modifier.",
+        },
+        {
+            "Category": "semantic_similarity_limitation",
+            "Dataset": "SciQ",
+            "Model": "BGE",
+            "Failure Kind": "high_similarity_wrong",
+            "Reference": "proto-oncogenes",
+            "Prediction": "Oncogenes",
+            "Similarity": "0.835",
+            "Distance": "0.165",
+            "Interpretation": "Related biological term, but not the same answer.",
+        },
+        {
+            "Category": "semantic_similarity_limitation",
+            "Dataset": "SciQ",
+            "Model": "BGE",
+            "Failure Kind": "high_similarity_wrong",
+            "Reference": "solar energy",
+            "Prediction": "Solar panels",
+            "Similarity": "0.837",
+            "Distance": "0.163",
+            "Interpretation": "Related concept, but source vs. device distinction matters.",
+        },
+        {
+            "Category": "low_similarity_false_negative",
+            "Dataset": "SciQ",
+            "Model": "MiniLM",
+            "Failure Kind": "low_similarity_correct",
+            "Reference": "three",
+            "Prediction": "Three main types: elliptical, spiral, and irregular.",
+            "Similarity": "0.190",
+            "Distance": "0.810",
+            "Interpretation": "Correct short answer is embedded in a much longer sentence.",
+        },
+        {
+            "Category": "low_similarity_false_negative",
+            "Dataset": "SciQ",
+            "Model": "MiniLM",
+            "Failure Kind": "low_similarity_correct",
+            "Reference": "negative",
+            "Prediction": "Partial negative charge",
+            "Similarity": "0.377",
+            "Distance": "0.623",
+            "Interpretation": "Reference is contained, but added context changes the sentence vector.",
+        },
+        {
+            "Category": "low_similarity_false_negative",
+            "Dataset": "SciQ",
+            "Model": "MiniLM",
+            "Failure Kind": "low_similarity_correct",
+            "Reference": "bacteria",
+            "Prediction": "Yogurt is made from milk fermented with bacteria.",
+            "Similarity": "0.399",
+            "Distance": "0.601",
+            "Interpretation": "Answer containment is clear, but whole-sentence embedding is diluted.",
+        },
+    ]
+
+
+def representative_failure_examples_zh() -> list[dict]:
+    rows = []
+    category_map = {
+        "automatic_label_artifact": "自动标签缺陷",
+        "semantic_similarity_limitation": "语义相似度局限",
+        "low_similarity_false_negative": "低相似度假阴性",
+    }
+    kind_map = {
+        "high_similarity_wrong": "高相似但标为错",
+        "low_similarity_correct": "低相似但标为对",
+    }
+    interpretation_map = {
+        "Singular/plural variation; the automatic label is too strict.": "单复数差异，自动标签过于严格。",
+        "Numeric equivalence should be normalized before labeling.": "数字表达等价，标注前应做数字规范化。",
+        "Close paraphrase/anatomical wording difference.": "近义表达或术语说法差异。",
+        "Prediction is related but underspecified; it misses the bone modifier.": "预测相关但过泛，缺少 bone 这个关键限定。",
+        "Related biological term, but not the same answer.": "相关生物术语，但并不是同一个答案。",
+        "Related concept, but source vs. device distinction matters.": "概念相关，但 energy source 与 device 的区别会影响正确性。",
+        "Correct short answer is embedded in a much longer sentence.": "正确短答案嵌在长句中。",
+        "Reference is contained, but added context changes the sentence vector.": "包含参考答案，但额外上下文改变了句向量。",
+        "Answer containment is clear, but whole-sentence embedding is diluted.": "答案包含关系很清楚，但整句 embedding 被稀释。",
+    }
+    for row in representative_failure_examples():
+        rows.append(
+            {
+                "类别": category_map[row["Category"]],
+                "数据集": row["Dataset"],
+                "模型": row["Model"],
+                "Failure Kind": kind_map[row["Failure Kind"]],
+                "参考答案": row["Reference"],
+                "预测答案": row["Prediction"],
+                "相似度": row["Similarity"],
+                "距离": row["Distance"],
+                "解释": interpretation_map[row["Interpretation"]],
+            }
+        )
+    return rows
+
+
 def plot_metric_comparison(metrics: list[dict]) -> None:
     ensure_dir(FIGURES)
     datasets = []
@@ -462,6 +605,7 @@ def build_reports() -> None:
 
     (ROOT / "part4_report.md").write_text("\n".join(english), encoding="utf-8")
     (ROOT / "part4_report.zh.md").write_text("\n".join(chinese), encoding="utf-8")
+    enhance_final_reports()
 
     for old_name in [
         "part4_complete_analysis.md",
@@ -474,6 +618,151 @@ def build_reports() -> None:
         old_path = ROOT / old_name
         if old_path.exists():
             old_path.unlink()
+
+
+def enhance_final_reports() -> None:
+    english_path = ROOT / "part4_report.md"
+    zh_path = ROOT / "part4_report.zh.md"
+
+    english = english_path.read_text(encoding="utf-8")
+    if "## 6. Similarity Distance and Concrete Examples" not in english:
+        english_examples = markdown_table(
+            representative_failure_examples(),
+            ["Category", "Dataset", "Model", "Failure Kind", "Reference", "Prediction", "Similarity", "Distance", "Interpretation"],
+        )
+        english_insert = "\n".join([
+            "## 6. Similarity Distance and Concrete Examples",
+            "The similarity score is cosine similarity between the prediction embedding and the reference embedding. For interpretation, we also use:",
+            "",
+            "```text",
+            "distance = 1 - cosine_similarity",
+            "```",
+            "",
+            "A small distance means the two answers are close in embedding space. In `high_similarity_wrong` cases, the distance is small even though the automatic label says the prediction is wrong. In `low_similarity_correct` cases, the distance is large even though the automatic label says the prediction is correct.",
+            "",
+            english_examples,
+            "",
+            "These examples show that the same distance pattern can mean different things. A small distance can indicate a correct paraphrase that was mislabeled, but it can also indicate that the embedding model confuses semantic relatedness with factual correctness. A large distance can indicate that a short correct answer is surrounded by extra context.",
+            "",
+        ])
+        english = english.replace("## 6. Main Failure Types", english_insert + "## 7. Main Failure Types")
+        english = english.replace("## 7. Conclusions", "## 8. Conclusions")
+        english = english.replace("## 8. Improvement Proposal", "## 9. Detailed Improvement Proposal")
+        english = english.replace("## 9. Reproducibility", "## 10. Reproducibility")
+
+    old_improvement = "\n".join([
+        "A stronger evaluator should combine multiple checks:",
+        "",
+        "1. Stronger normalization: lowercasing, punctuation/hyphen handling, lemmatization, and number-word conversion.",
+        "2. Answer containment and answer extraction, especially when predictions are longer than references.",
+        "3. Entity or keyword overlap to catch important factual units.",
+        "4. Sentence-level similarity for longer answers.",
+        "5. NLI or LLM-based verification for ambiguous high-similarity cases.",
+        "",
+        "A practical hybrid pipeline is: first normalize and check exact/containment matches; then apply embedding similarity with a dataset/model-specific threshold; finally send ambiguous cases to a verifier.",
+    ])
+    detailed_improvement = "\n".join([
+        "The failure analysis suggests that a better evaluator should not replace embedding similarity entirely. Instead, similarity should become one component in a more structured correctness pipeline.",
+        "",
+        "### 9.1 Normalization and Canonicalization",
+        "Before computing labels or similarity thresholds, normalize both prediction and reference. This should include lowercasing, punctuation removal, hyphen normalization, singular/plural lemmatization, number-word conversion, and common abbreviation expansion such as `CO2` to `carbon dioxide`. This directly targets label artifacts such as `ovary` vs. `ovaries`, `four` vs. `4`, and `intra-plate` vs. `intraplate`.",
+        "",
+        "### 9.2 Answer Extraction for Long Predictions",
+        "For short-answer QA, many false negatives happen because the prediction is a full sentence while the reference is a short phrase. Before embedding comparison, extract the likely answer span from the prediction. A simple version can use containment rules and noun-phrase heuristics; a stronger version can use an LLM prompt that rewrites the prediction into the shortest answer phrase. This addresses cases like `Three main types: elliptical, spiral, and irregular.` vs. `three`.",
+        "",
+        "### 9.3 Hybrid Scoring",
+        "Use a score that combines semantic similarity with lexical and factual overlap:",
+        "",
+        "```text",
+        "hybrid_score = 0.55 * embedding_similarity",
+        "             + 0.20 * token_f1",
+        "             + 0.15 * entity_or_keyword_overlap",
+        "             + 0.10 * normalization_bonus",
+        "```",
+        "",
+        "The weights can be tuned on a small validation subset. The goal is to keep the paraphrase sensitivity of embeddings while preventing related but incomplete answers from receiving too much credit.",
+        "",
+        "### 9.4 Dataset- and Model-Specific Thresholds",
+        "The best thresholds are not the same for MiniLM and BGE. MiniLM works best around 0.70-0.76 in these results, while BGE often needs around 0.78-0.81. Therefore, a single global threshold such as 0.75 is not ideal. Thresholds should be selected separately for each dataset and embedding model using validation F1 or a precision-recall trade-off.",
+        "",
+        "### 9.5 Ambiguity-Aware Verification",
+        "Some cases should not be decided by similarity alone. Send uncertain cases to a verifier when the score is near the threshold, when entity overlap is low despite high similarity, or when the prediction is much shorter or more general than the reference. The verifier can be an NLI model or an LLM judge asked whether the prediction entails the reference answer under the question context.",
+        "",
+        "### 9.6 Expected Effect",
+        "Normalization should reduce label artifacts; answer extraction should reduce MiniLM's low-similarity false negatives; entity overlap and verifier checks should reduce BGE's high-similarity wrong cases caused by semantic relatedness without correctness. These modules directly target the three failure categories found in the human annotation analysis.",
+    ])
+    english = english.replace(old_improvement, detailed_improvement)
+    english_path.write_text(english, encoding="utf-8")
+
+    zh = zh_path.read_text(encoding="utf-8")
+    if "## 6. 相似度距离说明与具体例子" not in zh:
+        zh_examples = markdown_table(
+            representative_failure_examples_zh(),
+            ["类别", "数据集", "模型", "Failure Kind", "参考答案", "预测答案", "相似度", "距离", "解释"],
+        )
+        zh_insert = "\n".join([
+            "## 6. 相似度距离说明与具体例子",
+            "这里的 similarity 是 prediction embedding 和 reference embedding 之间的 cosine similarity。为了更直观地解释 failure case，我们也使用一个简单的距离：",
+            "",
+            "```text",
+            "distance = 1 - cosine_similarity",
+            "```",
+            "",
+            "距离越小，表示两个答案在 embedding space 中越接近。`high_similarity_wrong` 的特点是：距离很小，但自动标签认为 prediction 错；`low_similarity_correct` 的特点是：距离很大，但自动标签认为 prediction 对。",
+            "",
+            zh_examples,
+            "",
+            "这些例子说明，同样是“小距离”，可能代表正确改写被自动标签误判，也可能代表 embedding 把“语义相关”误当成“事实正确”。而“大距离”也不一定代表答案错，它可能只是因为正确短答案被放进了更长的句子里。",
+            "",
+        ])
+        zh = zh.replace("## 6. 主要 Failure Type", zh_insert + "## 7. 主要 Failure Type")
+        zh = zh.replace("## 7. 结论", "## 8. 结论")
+        zh = zh.replace("## 8. 改进方案", "## 9. 详细改进方案")
+        zh = zh.replace("## 9. 可复现方式", "## 10. 可复现方式")
+
+    old_zh_improvement = "\n".join([
+        "更稳健的 evaluator 应该结合多种检查：",
+        "",
+        "1. 更强 normalization：大小写、标点/连字符、词形还原、数字词转换。",
+        "2. Answer containment 和 answer extraction，尤其是 prediction 比 reference 更长时。",
+        "3. Entity 或 keyword overlap，用来检查关键事实单元。",
+        "4. 对长答案使用 sentence-level similarity。",
+        "5. 对模糊的 high-similarity cases 使用 NLI 或 LLM judge 做事实一致性验证。",
+        "",
+        "一个可实现的 hybrid pipeline 是：先做 normalization 和 exact/containment 检查；再使用 dataset/model-specific threshold 的 embedding similarity；最后把 ambiguous cases 交给 verifier。",
+    ])
+    detailed_zh_improvement = "\n".join([
+        "failure analysis 表明，改进方案不应该简单地抛弃 embedding similarity，而应该把它作为一个更完整 evaluator 的组成部分。",
+        "",
+        "### 9.1 Normalization and Canonicalization",
+        "在生成 correctness label 或使用 similarity threshold 之前，先对 prediction 和 reference 做更强的规范化，包括：小写化、标点清理、连字符统一、单复数/词形还原、数字词转换，以及常见缩写展开，例如把 `CO2` 映射到 `carbon dioxide`。这可以直接修复 `ovary` vs. `ovaries`、`four` vs. `4`、`intra-plate` vs. `intraplate` 这类自动标签缺陷。",
+        "",
+        "### 9.2 面向长预测的 Answer Extraction",
+        "对于 short-answer QA，很多 low-similarity-correct 是因为 prediction 是完整句子，而 reference 是短语。计算 embedding similarity 之前，应先从 prediction 中抽取最可能的答案片段。简单版本可以用 containment rule 和 noun phrase heuristic；更强版本可以让 LLM 把预测改写成最短答案。这能处理 `Three main types: elliptical, spiral, and irregular.` vs. `three` 这类样例。",
+        "",
+        "### 9.3 Hybrid Scoring",
+        "可以把 embedding similarity 和词面/事实重叠结合起来：",
+        "",
+        "```text",
+        "hybrid_score = 0.55 * embedding_similarity",
+        "             + 0.20 * token_f1",
+        "             + 0.15 * entity_or_keyword_overlap",
+        "             + 0.10 * normalization_bonus",
+        "```",
+        "",
+        "权重可以在小验证集上调参。这样做的目标是：既保留 embedding 对 paraphrase 的识别能力，又避免它给语义相关但不完整的答案过高分。",
+        "",
+        "### 9.4 Dataset- and Model-Specific Thresholds",
+        "MiniLM 和 BGE 的最佳阈值并不相同。当前结果里，MiniLM 的 best threshold 大约在 0.70-0.76，而 BGE 往往需要 0.78-0.81。因此，不建议使用统一的 0.75 threshold。应针对每个 dataset 和 embedding model，用 validation F1 或 precision-recall trade-off 单独选择阈值。",
+        "",
+        "### 9.5 Ambiguity-Aware Verification",
+        "一些样例不适合只靠 similarity 决定。例如：分数接近阈值、similarity 高但 entity overlap 低、prediction 明显比 reference 更短或更泛。这些样例可以交给 verifier，例如 NLI model 或 LLM judge，让它在 question context 下判断 prediction 是否 entail reference answer。",
+        "",
+        "### 9.6 预期效果",
+        "Normalization 主要减少自动标签缺陷；answer extraction 主要减少 MiniLM 的 low-similarity false negatives；entity overlap 和 verifier 主要减少 BGE 因“语义相关但不正确”产生的 high-similarity wrong cases。这三个方向正好对应 human annotation 中发现的三大 failure 类别。",
+    ])
+    zh = zh.replace(old_zh_improvement, detailed_zh_improvement)
+    zh_path.write_text(zh, encoding="utf-8")
 
 
 def main() -> None:
