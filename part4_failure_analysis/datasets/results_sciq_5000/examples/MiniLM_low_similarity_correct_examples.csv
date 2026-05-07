@@ -1,9 +1,0 @@
-dataset,model,failure_kind,id,question,ground_truth,prediction,token_f1,similarity,heuristic_type
-results_sciq_5000,MiniLM,low_similarity_correct,sample_1659,What is the fracture called when rocks on both sides move?,a fault,Strike-slip fault,0.500,0.499,answer_containment_low_embedding_score
-results_sciq_5000,MiniLM,low_similarity_correct,sample_4360,What is algae easier to covert into that corn is currently used for?,fuel,biofuel,0.000,0.494,answer_containment_low_embedding_score
-results_sciq_5000,MiniLM,low_similarity_correct,sample_1481,What property are alkali metals at room temperature?,solid,Solid elements except for lithium.,0.333,0.493,overly_long_answer_context_dilution
-results_sciq_5000,MiniLM,low_similarity_correct,sample_2643,"Condensation, melting, deposition, sublimation, vaporization, and freezing are all considered changes in what?",state,states of matter,0.000,0.491,answer_containment_low_embedding_score
-results_sciq_5000,MiniLM,low_similarity_correct,sample_1394,The logistics of carrying out cellular metabolism sets limits on what physical property of the cell?,size,Cell size,0.667,0.491,answer_containment_low_embedding_score
-results_sciq_5000,MiniLM,low_similarity_correct,sample_2146,"In the case of the thyroid hormone pathway, thyroid hormone itself carries out what kind of feedback?",negative,Negative feedback,0.667,0.488,answer_containment_low_embedding_score
-results_sciq_5000,MiniLM,low_similarity_correct,sample_3366,"Most hormones are controlled by what type of feedback, which causes the hormone to decrease its own production?",negative,Negative feedback,0.667,0.488,answer_containment_low_embedding_score
-results_sciq_5000,MiniLM,low_similarity_correct,sample_3166,Researchers have also used insect courtship to explore genetic variation underlying differences in what?,behavior,mating behavior,0.667,0.484,answer_containment_low_embedding_score

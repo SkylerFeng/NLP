@@ -1,0 +1,5 @@
+result_group,dataset,model,failure_kind,count,avg_similarity,avg_distance
+baseline,results_simple_questions_wiki_500,BGE,high_similarity_wrong,9,0.832,0.168
+baseline,results_simple_questions_wiki_500,MiniLM,high_similarity_wrong,13,0.876,0.124
+baseline,results_simple_questions_wiki_500,BGE,low_similarity_correct,0,0.000,0.000
+baseline,results_simple_questions_wiki_500,MiniLM,low_similarity_correct,0,0.000,0.000

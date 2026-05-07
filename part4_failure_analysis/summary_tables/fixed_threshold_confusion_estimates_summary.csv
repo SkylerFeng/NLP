@@ -1,9 +1,0 @@
-dataset,model,fixed_threshold,total,estimated_tp,estimated_fp,estimated_tn,estimated_fn,fixed_accuracy,fixed_precision,fixed_recall,fixed_f1
-results_nq,MiniLM,0.75,5000,2635,338,1731,296,0.873,0.886,0.899,0.893
-results_nq,BGE,0.75,5000,2852,718,1351,79,0.841,0.799,0.973,0.877
-results_sciq_5000,MiniLM,0.75,5000,2626,328,1733,313,0.872,0.889,0.894,0.891
-results_sciq_5000,BGE,0.75,5000,2859,710,1351,80,0.842,0.801,0.973,0.879
-results_truthfulQA_500,MiniLM,0.75,500,267,42,162,29,0.858,0.864,0.902,0.883
-results_truthfulQA_500,BGE,0.75,500,291,73,131,5,0.844,0.799,0.983,0.882
-results_wiki,MiniLM,0.75,5000,2632,330,1741,297,0.875,0.889,0.899,0.894
-results_wiki,BGE,0.75,5000,2847,720,1351,82,0.840,0.798,0.972,0.877

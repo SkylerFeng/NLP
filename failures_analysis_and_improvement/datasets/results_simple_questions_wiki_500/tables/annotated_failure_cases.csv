@@ -1,0 +1,111 @@
+question,correct_answer,id,dataset,ground_truth,prompt,prediction,exact_match,token_f1,contains_ground_truth,contains_prediction_in_reference,correct_label,similarity_sentence_transformers_all_MiniLM_L6_v2,similarity_BAAI_bge_base_en_v1.5,entity_overlap,hybrid_sentence_transformers_all_MiniLM_L6_v2,hybrid_BAAI_bge_base_en_v1.5,result_group,dataset_result,task_type,model,failure_kind,active_similarity,distance,human_category,human_type,human_rationale
+What type of music Fall Heads Roll,post-punk,sample_19,simple_questions_wiki,post-punk,"Answer the following factual question with a short phrase.
+
+Question: What type of music Fall Heads Roll
+
+Answer:",Post-metal,0,0.5,0,0,0,0.6081979274749756,0.817476749420166,0.0,0.4257385492324829,0.5722337245941161,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.817476749420166,0.18252325057983398,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+what television genre is The Starter Wife?,drama film,sample_36,simple_questions_wiki,drama film,"Answer the following factual question with a short phrase.
+
+Question: what television genre is The Starter Wife?
+
+Answer:",Drama,0,0.6666666666666666,0,0,0,0.6847378015518188,0.8055222034454346,0.0,0.4793164610862732,0.5638655424118042,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.8055222034454346,0.19447779655456543,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what genre is the book In the Line of Fire: A Memoir,memoir,sample_80,simple_questions_wiki,memoir,"Answer the following factual question with a short phrase.
+
+Question: what genre is the book In the Line of Fire: A Memoir
+
+Answer:",Autobiography,0,0.0,0,0,0,0.6538707613945007,0.8205961585044861,0.0,0.45770953297615047,0.5744173109531402,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.8205961585044861,0.17940384149551392,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+Leo Durocher is what in relation to baseball?,baseball manager,sample_107,simple_questions_wiki,baseball manager,"Answer the following factual question with a short phrase.
+
+Question: Leo Durocher is what in relation to baseball?
+
+Answer:",Baseball player and manager,0,0.6666666666666666,0,0,0,0.9008243083953857,0.8427727818489075,0.0,0.63057701587677,0.5899409472942352,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.8427727818489075,0.15722721815109253,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what is constance markiewicz's religion?,Catholicism,sample_139,simple_questions_wiki,Catholicism,"Answer the following factual question with a short phrase.
+
+Question: what is constance markiewicz's religion?
+
+Answer:",Roman Catholic,0,0.0,0,0,0,0.8694711923599243,0.8639088273048401,0.0,0.608629834651947,0.6047361791133881,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.8639088273048401,0.1360911726951599,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What sport is Criciúma Esporte Clube a part of?,association football,sample_153,simple_questions_wiki,association football,"Answer the following factual question with a short phrase.
+
+Question: What sport is Criciúma Esporte Clube a part of?
+
+Answer:",Football,0,0.6666666666666666,0,0,0,0.7704479098320007,0.8601401448249817,0.0,0.5393135368824005,0.6020981013774871,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.8601401448249817,0.1398598551750183,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what genre is the film On the Nickel,drama film,sample_157,simple_questions_wiki,drama film,"Answer the following factual question with a short phrase.
+
+Question: what genre is the film On the Nickel
+
+Answer:",Drama,0,0.6666666666666666,0,0,0,0.6847377419471741,0.805522084236145,0.0,0.47931641936302183,0.5638654589653015,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.805522084236145,0.19447791576385498,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what religion is Vinny deMacedo a part of,Catholicism,sample_214,simple_questions_wiki,Catholicism,"Answer the following factual question with a short phrase.
+
+Question: what religion is Vinny deMacedo a part of
+
+Answer:",Roman Catholic,0,0.0,0,0,0,0.8694711923599243,0.8639088273048401,0.0,0.608629834651947,0.6047361791133881,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.8639088273048401,0.1360911726951599,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+what country is the city Chongqing in,People's Republic of China,sample_442,simple_questions_wiki,People's Republic of China,"Answer the following factual question with a short phrase.
+
+Question: what country is the city Chongqing in
+
+Answer:",China,0,0.33333333333333337,0,0,0,0.5955054759979248,0.8121870160102844,0.5,0.5668538331985473,0.718530911207199,baseline,results_simple_questions_wiki_500,short_form,BGE,high_similarity_wrong,0.8121870160102844,0.18781298398971558,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+"which country does Harry Blackstone, Jr. come from",United States of America,sample_31,simple_questions_wiki,United States of America,"Answer the following factual question with a short phrase.
+
+Question: which country does Harry Blackstone, Jr. come from
+
+Answer:",United States,0,0.6666666666666666,0,1,0,0.9037064909934998,0.6150476932525635,0.6666666666666666,0.8325945436954498,0.6305333852767945,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.9037064909934998,0.09629350900650024,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what country is Anthony Lane from,United States of America,sample_63,simple_questions_wiki,United States of America,"Answer the following factual question with a short phrase.
+
+Question: what country is Anthony Lane from
+
+Answer:",United States,0,0.6666666666666666,0,1,0,0.903706431388855,0.6150475144386292,0.6666666666666666,0.8325945019721985,0.6305332601070404,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.903706431388855,0.09629356861114502,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+which country is John Berry from,United States of America,sample_72,simple_questions_wiki,United States of America,"Answer the following factual question with a short phrase.
+
+Question: which country is John Berry from
+
+Answer:",United States,0,0.6666666666666666,0,1,0,0.9037065505981445,0.6150474548339844,0.6666666666666666,0.8325945854187011,0.6305332183837891,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.9037065505981445,0.09629344940185547,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+Leo Durocher is what in relation to baseball?,baseball manager,sample_107,simple_questions_wiki,baseball manager,"Answer the following factual question with a short phrase.
+
+Question: Leo Durocher is what in relation to baseball?
+
+Answer:",Baseball player and manager,0,0.6666666666666666,0,0,0,0.9008243083953857,0.8427727818489075,0.0,0.63057701587677,0.5899409472942352,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.9008243083953857,0.09917569160461426,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what is constance markiewicz's religion?,Catholicism,sample_139,simple_questions_wiki,Catholicism,"Answer the following factual question with a short phrase.
+
+Question: what is constance markiewicz's religion?
+
+Answer:",Roman Catholic,0,0.0,0,0,0,0.8694711923599243,0.8639088273048401,0.0,0.608629834651947,0.6047361791133881,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.8694711923599243,0.13052880764007568,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+where did the tv program Your Show Time originate from?,United States of America,sample_169,simple_questions_wiki,United States of America,"Answer the following factual question with a short phrase.
+
+Question: where did the tv program Your Show Time originate from?
+
+Answer:",United States,0,0.6666666666666666,0,1,0,0.9037064909934998,0.6150476336479187,0.6666666666666666,0.8325945436954498,0.6305333435535431,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.9037064909934998,0.09629350900650024,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what religion is Vinny deMacedo a part of,Catholicism,sample_214,simple_questions_wiki,Catholicism,"Answer the following factual question with a short phrase.
+
+Question: what religion is Vinny deMacedo a part of
+
+Answer:",Roman Catholic,0,0.0,0,0,0,0.8694711923599243,0.8639088273048401,0.0,0.608629834651947,0.6047361791133881,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.8694711923599243,0.13052880764007568,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+"which religion is Alfonso, Duke of Anjou and Cádiz",Roman Catholic Church,sample_253,simple_questions_wiki,Roman Catholic Church,"Answer the following factual question with a short phrase.
+
+Question: which religion is Alfonso, Duke of Anjou and Cádiz
+
+Answer:",Catholicism,0,0.0,0,0,0,0.8103400468826294,0.7724885940551758,0.0,0.5672380328178406,0.540742015838623,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.8103400468826294,0.1896599531173706,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+which country is Harvey Kurtzman from,United States of America,sample_322,simple_questions_wiki,United States of America,"Answer the following factual question with a short phrase.
+
+Question: which country is Harvey Kurtzman from
+
+Answer:",United States,0,0.6666666666666666,0,1,0,0.9037065505981445,0.6150474548339844,0.6666666666666666,0.8325945854187011,0.6305332183837891,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.9037065505981445,0.09629344940185547,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what country made the film  The Rejected Woman,United States of America,sample_355,simple_questions_wiki,United States of America,"Answer the following factual question with a short phrase.
+
+Question: what country made the film  The Rejected Woman
+
+Answer:",United States,0,0.6666666666666666,0,1,0,0.9037064909934998,0.6150475144386292,0.6666666666666666,0.8325945436954498,0.6305332601070404,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.9037064909934998,0.09629350900650024,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+what genre does netflix think REC is,horror film,sample_423,simple_questions_wiki,horror film,"Answer the following factual question with a short phrase.
+
+Question: what genre does netflix think REC is
+
+Answer:",Horror/Thriller,0,0.5,0,0,0,0.836342990398407,0.7568294405937195,0.0,0.5854400932788848,0.5297806084156036,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.836342990398407,0.16365700960159302,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+Which genre of music is on the album titled Underclass Hero,pop punk,sample_473,simple_questions_wiki,pop punk,"Answer the following factual question with a short phrase.
+
+Question: Which genre of music is on the album titled Underclass Hero
+
+Answer:",Punk rock,0,0.5,0,0,0,0.862460196018219,0.7917883396148682,0.0,0.6037221372127533,0.5542518377304076,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.862460196018219,0.137539803981781,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+what type of movie is Spiral?,psychological thriller,sample_495,simple_questions_wiki,psychological thriller,"Answer the following factual question with a short phrase.
+
+Question: what type of movie is Spiral?
+
+Answer:",Action thriller,0,0.5,0,0,0,0.811568021774292,0.7545284628868103,0.0,0.5680976152420043,0.5281699240207671,baseline,results_simple_questions_wiki_500,short_form,MiniLM,high_similarity_wrong,0.811568021774292,0.188431978225708,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."

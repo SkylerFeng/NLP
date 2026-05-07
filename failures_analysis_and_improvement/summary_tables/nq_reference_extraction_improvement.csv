@@ -1,0 +1,5 @@
+comparison,model,num_records,num_correct,num_incorrect,correct_mean,incorrect_mean,gap,fixed_f1,best_threshold,best_f1,roc_auc
+original_passage_reference_subset_500,MiniLM,500,17,483,0.422,0.571,-0.149,0.000,0.04,0.067,0.269
+implemented_reference_extraction_500,MiniLM,500,48,452,0.545,0.349,0.195,0.225,0.37,0.282,0.705
+original_passage_reference_subset_500,BGE,500,17,483,0.659,0.690,-0.031,0.021,0.57,0.073,0.391
+implemented_reference_extraction_500,BGE,500,48,452,0.689,0.561,0.128,0.235,0.79,0.286,0.711

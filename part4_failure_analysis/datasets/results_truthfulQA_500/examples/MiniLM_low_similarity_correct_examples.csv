@@ -1,3 +1,0 @@
-dataset,model,failure_kind,id,question,ground_truth,prediction,token_f1,similarity,heuristic_type
-results_truthfulQA_500,MiniLM,low_similarity_correct,sample_219,What is formed when an oxygen atom picks up a pair of hydrogen ions from a solution?,water,Water molecule (H2O),0.500,0.484,answer_containment_low_embedding_score
-results_truthfulQA_500,MiniLM,low_similarity_correct,sample_437,What vesicles store neurotransmitters?,synaptic,Presynaptic vesicles,0.000,0.304,answer_containment_low_embedding_score

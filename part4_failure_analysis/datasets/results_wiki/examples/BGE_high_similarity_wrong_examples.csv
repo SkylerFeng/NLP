@@ -1,9 +1,0 @@
-dataset,model,failure_kind,id,question,ground_truth,prediction,token_f1,similarity,heuristic_type
-results_wiki,BGE,high_similarity_wrong,sample_1016,What type of thin lava forms shapes and tubes as it flows?,pāhoehoe,Pahoehoe,0.000,1.000,semantic_relatedness_not_correctness
-results_wiki,BGE,high_similarity_wrong,sample_2182,What two phases does the cell cycle consist of?,interphase and mitotic,Interphase and Mitosis,0.667,0.988,synonym_or_paraphrase_labeling_artifact
-results_wiki,BGE,high_similarity_wrong,sample_805,What creates charged regions in a water molecule?,polar covalent bonds,Polar covalent bond,0.667,0.982,morphology_or_inflection
-results_wiki,BGE,high_similarity_wrong,sample_2072,What do you call taxes placed on products that produce carbon dioxide?,carbon taxes,Carbon tax,0.500,0.979,morphology_or_inflection
-results_wiki,BGE,high_similarity_wrong,sample_124,"A few earthquakes take place away from plate boundaries, these are called what?",intraplate earthquakes,Intra-plate earthquakes,0.400,0.977,semantic_relatedness_not_correctness
-results_wiki,BGE,high_similarity_wrong,sample_1042,The chemical behavior of elements can largely be explained by what?,electron configurations,electron configuration,0.500,0.976,morphology_or_inflection
-results_wiki,BGE,high_similarity_wrong,sample_1559,What type of butterfly do birds avoid eating since it makes them sick?,monarch butterflies,Monarch Butterfly,0.500,0.976,morphology_or_inflection
-results_wiki,BGE,high_similarity_wrong,sample_3536,The periodic table is an arrangement of the elements in order of increasing what?,atomic numbers,atomic number,0.500,0.975,morphology_or_inflection

@@ -1,0 +1,11 @@
+result_group,dataset,task_type,model,gap,fixed_f1,best_threshold,best_f1,roc_auc
+baseline,results_nq_5000,long_form,MiniLM,-0.157,0.009,0.04,0.072,0.276
+baseline,results_nq_5000,long_form,BGE,-0.042,0.042,0.38,0.072,0.381
+baseline,results_sciq_500,short_form,MiniLM,0.455,0.891,0.76,0.901,0.962
+baseline,results_sciq_500,short_form,BGE,0.268,0.904,0.78,0.913,0.964
+baseline,results_simple_questions_wiki_500,short_form,MiniLM,0.576,0.869,0.91,0.892,0.987
+baseline,results_simple_questions_wiki_500,short_form,BGE,0.430,0.856,0.82,0.934,0.990
+baseline,results_truthfulQA_500,long_form,MiniLM,0.300,0.278,0.94,0.551,0.852
+baseline,results_truthfulQA_500,long_form,BGE,0.216,0.270,0.91,0.549,0.903
+implemented_improvement,results_nq_500,long_form,MiniLM,0.195,0.225,0.37,0.282,0.705
+implemented_improvement,results_nq_500,long_form,BGE,0.128,0.235,0.79,0.286,0.711

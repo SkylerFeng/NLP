@@ -1,0 +1,376 @@
+question,correct_answer,id,dataset,ground_truth,prompt,prediction,reference_answer,reference_answer_source,reference_evidence,exact_match,token_f1,contains_ground_truth,contains_prediction_in_reference,correct_label,similarity_sentence_transformers_all_MiniLM_L6_v2,similarity_BAAI_bge_base_en_v1.5,entity_overlap,hybrid_sentence_transformers_all_MiniLM_L6_v2,hybrid_BAAI_bge_base_en_v1.5,result_group,dataset_result,task_type,model,failure_kind,active_similarity,distance,human_category,human_type,human_rationale
+"Zinc is more easily oxidized than iron because zinc has a lower reduction potential. since zinc has a lower reduction potential, it is a more what?",active metal,sample_10,sciq,active metal,"Answer the following science question with a short phrase.
+
+Question: Zinc is more easily oxidized than iron because zinc has a lower reduction potential. since zinc has a lower reduction potential, it is a more what?
+
+Answer:",active,active metal,ground_truth,active metal,0,0.6666666666666666,0,0,0,0.5899034738540649,0.8021409511566162,0.6666666666666666,0.6129324316978455,0.7614986658096312,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8021409511566162,0.1978590488433838,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+What is controlled by both genes and experiences in a given envionment?,animal behaviors,sample_11,sciq,animal behaviors,"Answer the following science question with a short phrase.
+
+Question: What is controlled by both genes and experiences in a given envionment?
+
+Answer:",Behavior,animal behaviors,ground_truth,animal behaviors,0,0.6666666666666666,0,0,0,0.607286810874939,0.8763945698738098,0.0,0.42510076761245724,0.6134761989116668,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8763945698738098,0.12360543012619019,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+What is controlled by regulatory proteins that bind to regulatory elements on dna?,gene transcription,sample_14,sciq,gene transcription,"Answer the following science question with a short phrase.
+
+Question: What is controlled by regulatory proteins that bind to regulatory elements on dna?
+
+Answer:",Gene expression,gene transcription,ground_truth,gene transcription,0,0.5,0,0,0,0.7839295268058777,0.8610606789588928,0.0,0.5487506687641144,0.6027424752712249,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8610606789588928,0.13893932104110718,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What phenomenon is primarily the result of plate tectonic motions?,earthquake,sample_41,sciq,earthquake,"Answer the following science question with a short phrase.
+
+Question: What phenomenon is primarily the result of plate tectonic motions?
+
+Answer:",Earthquakes,earthquake,ground_truth,earthquake,0,0.0,0,0,0,0.9081757068634033,0.9273387789726257,0.0,0.6357229948043823,0.649137145280838,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9273387789726257,0.07266122102737427,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+"Whether the organism is a bacterium, plant, or animal, all living things access energy by breaking down these?",carbohydrate molecules,sample_57,sciq,carbohydrate molecules,"Answer the following science question with a short phrase.
+
+Question: Whether the organism is a bacterium, plant, or animal, all living things access energy by breaking down these?
+
+Answer:",food molecules,carbohydrate molecules,ground_truth,carbohydrate molecules,0,0.5,0,0,0,0.695904552936554,0.8517605662345886,0.5,0.6371331870555877,0.746232396364212,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8517605662345886,0.14823943376541138,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What's the term for the gradual progression from simple plants to larger more complex ones in an area?,primary succession,sample_63,sciq,primary succession,"Answer the following science question with a short phrase.
+
+Question: What's the term for the gradual progression from simple plants to larger more complex ones in an area?
+
+Answer:",Succession,primary succession,ground_truth,primary succession,0,0.6666666666666666,0,0,0,0.8740105032920837,0.819545328617096,0.0,0.6118073523044586,0.5736817300319671,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.819545328617096,0.18045467138290405,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+What consequence of a tornado is responsible for most injuries and deaths?,flying debris,sample_66,sciq,flying debris,"Answer the following science question with a short phrase.
+
+Question: What consequence of a tornado is responsible for most injuries and deaths?
+
+Answer:",Debris impact,flying debris,ground_truth,flying debris,0,0.5,0,0,0,0.7417299747467041,0.8136398792266846,0.0,0.5192109823226928,0.5695479154586791,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8136398792266846,0.18636012077331543,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+An endocrine disease usually involves the secretion of too much or not enough of what?,hormone,sample_82,sciq,hormone,"Answer the following science question with a short phrase.
+
+Question: An endocrine disease usually involves the secretion of too much or not enough of what?
+
+Answer:",hormones,hormone,ground_truth,hormone,0,0.0,0,0,0,0.8980160355567932,0.912589430809021,0.0,0.6286112248897552,0.6388126015663147,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.912589430809021,0.087410569190979,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+Most of the pathogens that cause stis enter the body through mucous membranes of which organs?,reproductive organs,sample_88,sciq,reproductive organs,"Answer the following science question with a short phrase.
+
+Question: Most of the pathogens that cause stis enter the body through mucous membranes of which organs?
+
+Answer:",Sexual organs.,reproductive organs,ground_truth,reproductive organs,0,0.5,0,0,0,0.8157496452331543,0.8409343957901001,0.0,0.571024751663208,0.58865407705307,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8409343957901001,0.1590656042098999,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+"When water goes above and below its freezing point, what rock-breaking phenomenon is common?",ice wedging,sample_95,sciq,ice wedging,"Answer the following science question with a short phrase.
+
+Question: When water goes above and below its freezing point, what rock-breaking phenomenon is common?
+
+Answer:",Frost wedging,ice wedging,ground_truth,ice wedging,0,0.5,0,0,0,0.8144584894180298,0.8935739398002625,0.0,0.5701209425926208,0.6255017578601837,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8935739398002625,0.10642606019973755,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What type of reactions form compounds?,chemical reactions,sample_97,sciq,chemical reactions,"Answer the following science question with a short phrase.
+
+Question: What type of reactions form compounds?
+
+Answer:",Synthesis reactions,chemical reactions,ground_truth,chemical reactions,0,0.5,0,0,0,0.7546691298484802,0.8366628885269165,0.0,0.5282683908939361,0.5856640219688415,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8366628885269165,0.1633371114730835,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What is the term for the force of attraction between things that have a mass?,gravity,sample_102,sciq,gravity,"Answer the following science question with a short phrase.
+
+Question: What is the term for the force of attraction between things that have a mass?
+
+Answer:",Gravitational force,gravity,ground_truth,gravity,0,0.0,0,0,0,0.7904049754142761,0.8508163094520569,0.0,0.5532834827899933,0.5955714166164398,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8508163094520569,0.14918369054794312,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What renewable energy source converts energy from the sunlight into electricity?,solar energy,sample_115,sciq,solar energy,"Answer the following science question with a short phrase.
+
+Question: What renewable energy source converts energy from the sunlight into electricity?
+
+Answer:",Solar panels,solar energy,ground_truth,solar energy,0,0.5,0,0,0,0.7587160468101501,0.8369271159172058,0.0,0.5311012327671051,0.585848981142044,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8369271159172058,0.1630728840827942,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+Phosphate-containing ocean sediments form primarily from the bodies of ocean organisms and from their what?,excretions,sample_120,sciq,excretions,"Answer the following science question with a short phrase.
+
+Question: Phosphate-containing ocean sediments form primarily from the bodies of ocean organisms and from their what?
+
+Answer:",excreta,excretions,ground_truth,excretions,0,0.0,0,0,0,0.8667147755622864,0.8599010705947876,0.0,0.6067003428936004,0.6019307494163513,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8599010705947876,0.1400989294052124,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+"A few earthquakes take place away from plate boundaries, these are called what?",intraplate earthquakes,sample_124,sciq,intraplate earthquakes,"Answer the following science question with a short phrase.
+
+Question: A few earthquakes take place away from plate boundaries, these are called what?
+
+Answer:",Intra-plate earthquakes,intraplate earthquakes,ground_truth,intraplate earthquakes,0,0.4,0,0,0,0.8981689214706421,0.976912796497345,0.0,0.6287182450294494,0.6838389575481414,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.976912796497345,0.02308720350265503,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+"First, high temperature denatures proteins and does what to cells?",kills them,sample_131,sciq,kills them,"Answer the following science question with a short phrase.
+
+Question: First, high temperature denatures proteins and does what to cells?
+
+Answer:",Kills cells,kills them,ground_truth,kills them,0,0.5,0,0,0,0.5021904706954956,0.8010234236717224,0.0,0.3515333294868469,0.5607163965702057,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8010234236717224,0.1989765763282776,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What are made of long chains consisting almost solely of carbon and hydrogen?,lipids,sample_144,sciq,lipids,"Answer the following science question with a short phrase.
+
+Question: What are made of long chains consisting almost solely of carbon and hydrogen?
+
+Answer:",Fats,lipids,ground_truth,lipids,0,0.0,0,0,0,0.6038417220115662,0.8222718238830566,0.0,0.4226892054080963,0.5755902767181396,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8222718238830566,0.17772817611694336,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What do ranchers fear will happen if wolves return?,livestock predation,sample_152,sciq,livestock predation,"Answer the following science question with a short phrase.
+
+Question: What do ranchers fear will happen if wolves return?
+
+Answer:",Increased predation on livestock.,livestock predation,ground_truth,livestock predation,0,0.6666666666666666,0,0,0,0.9306113719940186,0.9186480045318604,0.0,0.651427960395813,0.6430536031723022,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9186480045318604,0.08135199546813965,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+What does the cell cycle do?,divide and reproduce cells,sample_188,sciq,divide and reproduce cells,"Answer the following science question with a short phrase.
+
+Question: What does the cell cycle do?
+
+Answer:",Grows and reproduces cells.,divide and reproduce cells,ground_truth,divide and reproduce cells,0,0.5,0,0,0,0.7151460647583008,0.8485504388809204,0.0,0.5006022453308105,0.5939853072166442,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8485504388809204,0.1514495611190796,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+"Inside the nasal area of the skull, the nasal cavity is divided into halves by the what?",nasal septum,sample_189,sciq,nasal septum,"Answer the following science question with a short phrase.
+
+Question: Inside the nasal area of the skull, the nasal cavity is divided into halves by the what?
+
+Answer:",septum,nasal septum,ground_truth,nasal septum,0,0.6666666666666666,0,0,0,0.7941708564758301,0.922648549079895,0.6666666666666666,0.755919599533081,0.8458539843559265,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.922648549079895,0.07735145092010498,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+What is a mass spectrometer used to measure?,relative atomic masses,sample_214,sciq,relative atomic masses,"Answer the following science question with a short phrase.
+
+Question: What is a mass spectrometer used to measure?
+
+Answer:",Mass and abundance of isotopes.,relative atomic masses,ground_truth,relative atomic masses,0,0.0,0,0,0,0.5350396037101746,0.8047003149986267,0.0,0.3745277225971222,0.5632902204990387,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8047003149986267,0.1952996850013733,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+Global warming will raise ocean levels due to melt water from glaciers and the greater volume of what?,warmer water,sample_216,sciq,warmer water,"Answer the following science question with a short phrase.
+
+Question: Global warming will raise ocean levels due to melt water from glaciers and the greater volume of what?
+
+Answer:",warm water,warmer water,ground_truth,warmer water,0,0.5,0,0,0,0.9005037546157837,0.9438207149505615,0.5,0.7803526282310486,0.810674500465393,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9438207149505615,0.05617928504943848,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What does the driving of turbines by the heating of water to steam accomplish?,generation of electricity,sample_220,sciq,generation of electricity,"Answer the following science question with a short phrase.
+
+Question: What does the driving of turbines by the heating of water to steam accomplish?
+
+Answer:",Generates electricity.,generation of electricity,ground_truth,generation of electricity,0,0.4,0,0,0,0.8558415770530701,0.884177565574646,0.0,0.599089103937149,0.6189242959022522,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.884177565574646,0.115822434425354,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What is a device that changes kinetic energy to electrical energy through electromagnetic induction?,an electric generator,sample_221,sciq,an electric generator,"Answer the following science question with a short phrase.
+
+Question: What is a device that changes kinetic energy to electrical energy through electromagnetic induction?
+
+Answer:",Generator,an electric generator,ground_truth,an electric generator,0,0.6666666666666666,0,0,0,0.8309645652770996,0.8594817519187927,0.0,0.5816751956939696,0.6016372263431549,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8594817519187927,0.14051824808120728,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+What property of warm air causes it to rise above cold air?,lower density,sample_227,sciq,lower density,"Answer the following science question with a short phrase.
+
+Question: What property of warm air causes it to rise above cold air?
+
+Answer:",Less dense,lower density,ground_truth,lower density,0,0.0,0,0,0,0.7964805364608765,0.8733507990837097,0.0,0.5575363755226135,0.6113455593585968,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8733507990837097,0.12664920091629028,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What are fibers that depend on aerobic respiration called?,oxidative fibers,sample_233,sciq,oxidative fibers,"Answer the following science question with a short phrase.
+
+Question: What are fibers that depend on aerobic respiration called?
+
+Answer:",Aerobic fibers,oxidative fibers,ground_truth,oxidative fibers,0,0.5,0,0,0,0.6363409161567688,0.8410004377365112,0.0,0.44543864130973815,0.5887003064155578,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8410004377365112,0.15899956226348877,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+The simplest class of organic compounds is the what?,hydrocarbons,sample_247,sciq,hydrocarbons,"Answer the following science question with a short phrase.
+
+Question: The simplest class of organic compounds is the what?
+
+Answer:",alkanes,hydrocarbons,ground_truth,hydrocarbons,0,0.0,0,0,0,0.6920030117034912,0.8434639573097229,0.0,0.48440210819244384,0.5904247701168059,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8434639573097229,0.1565360426902771,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What is the name of the two metalloids in the carbon group called?,silicon and germanium,sample_255,sciq,silicon and germanium,"Answer the following science question with a short phrase.
+
+Question: What is the name of the two metalloids in the carbon group called?
+
+Answer:",Boron and Silicon,silicon and germanium,ground_truth,silicon and germanium,0,0.6666666666666666,0,0,0,0.6699081063270569,0.8600960969924927,0.0,0.4689356744289398,0.6020672678947449,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8600960969924927,0.13990390300750732,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+"While climate change in earth history was due to natural processes, what is primarily to blame for recent global warming?",human actions,sample_262,sciq,human actions,"Answer the following science question with a short phrase.
+
+Question: While climate change in earth history was due to natural processes, what is primarily to blame for recent global warming?
+
+Answer:",Human activities,human actions,ground_truth,human actions,0,0.5,0,0,0,0.7371181845664978,0.9247585535049438,0.0,0.5159827291965484,0.6473309874534606,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9247585535049438,0.07524144649505615,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What keeps the moon orbiting earth?,gravity,sample_264,sciq,gravity,"Answer the following science question with a short phrase.
+
+Question: What keeps the moon orbiting earth?
+
+Answer:",Gravitational force,gravity,ground_truth,gravity,0,0.0,0,0,0,0.7904048562049866,0.8508161902427673,0.0,0.5532833993434906,0.595571333169937,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8508161902427673,0.14918380975723267,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What are formed by the attraction between oppositely charged ions?,ionic bonds,sample_265,sciq,ionic bonds,"Answer the following science question with a short phrase.
+
+Question: What are formed by the attraction between oppositely charged ions?
+
+Answer:",Ionic compounds,ionic bonds,ground_truth,ionic bonds,0,0.5,0,0,0,0.8100942969322205,0.8575113415718079,0.0,0.5670660078525542,0.6002579391002655,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8575113415718079,0.14248865842819214,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+For what purpose does liver use the excess carbohydrate?,to synthesize glycogen,sample_271,sciq,to synthesize glycogen,"Answer the following science question with a short phrase.
+
+Question: For what purpose does liver use the excess carbohydrate?
+
+Answer:",To store as glycogen.,to synthesize glycogen,ground_truth,to synthesize glycogen,0,0.5714285714285715,0,0,0,0.6864519715309143,0.8391920328140259,0.0,0.48051638007164,0.5874344229698181,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8391920328140259,0.16080796718597412,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What are the two distinct types of cells found in the animal kingdom?,prokaryotes and eukaryotes,sample_292,sciq,prokaryotes and eukaryotes,"Answer the following science question with a short phrase.
+
+Question: What are the two distinct types of cells found in the animal kingdom?
+
+Answer:",Eukaryotic and prokaryotic,prokaryotes and eukaryotes,ground_truth,prokaryotes and eukaryotes,0,0.3333333333333333,0,0,0,0.9513198733329773,0.9660742878913879,0.0,0.665923911333084,0.6762520015239715,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9660742878913879,0.03392571210861206,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What type of winds occur when air is forced over a mountain range?,chinook winds,sample_303,sciq,chinook winds,"Answer the following science question with a short phrase.
+
+Question: What type of winds occur when air is forced over a mountain range?
+
+Answer:",Mountain winds,chinook winds,ground_truth,chinook winds,0,0.5,0,0,0,0.6242203116416931,0.8243449926376343,0.0,0.43695421814918517,0.5770414948463439,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8243449926376343,0.17565500736236572,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What are the 2 primary hosts of ebola in central africa?,apes and bats,sample_330,sciq,apes and bats,"Answer the following science question with a short phrase.
+
+Question: What are the 2 primary hosts of ebola in central africa?
+
+Answer:",Bats and primates,apes and bats,ground_truth,apes and bats,0,0.6666666666666666,0,0,0,0.9175637364387512,0.9147254228591919,0.0,0.6422946155071259,0.6403077960014343,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9147254228591919,0.0852745771408081,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What occurs when some members of a species become geographically separated?,allopatric speciation,sample_334,sciq,allopatric speciation,"Answer the following science question with a short phrase.
+
+Question: What occurs when some members of a species become geographically separated?
+
+Answer:",Speciation,allopatric speciation,ground_truth,allopatric speciation,0,0.6666666666666666,0,0,0,0.7573440074920654,0.8772565126419067,0.0,0.5301408052444457,0.6140795588493346,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8772565126419067,0.12274348735809326,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+Both diffusion and effusion are related to the speed at which what objects move?,gas molecules,sample_372,sciq,gas molecules,"Answer the following science question with a short phrase.
+
+Question: Both diffusion and effusion are related to the speed at which what objects move?
+
+Answer:",molecules,gas molecules,ground_truth,gas molecules,0,0.6666666666666666,0,0,0,0.801552951335907,0.8762999773025513,0.6666666666666666,0.7610870659351348,0.8134099841117859,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8762999773025513,0.12370002269744873,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+The heart and a network of blood vessels that run throughout the body make up what organ system?,cardiovascular system,sample_380,sciq,cardiovascular system,"Answer the following science question with a short phrase.
+
+Question: The heart and a network of blood vessels that run throughout the body make up what organ system?
+
+Answer:",Circulatory System,cardiovascular system,ground_truth,cardiovascular system,0,0.5,0,0,0,0.7532528042793274,0.8704528212547302,0.0,0.5272769629955292,0.6093169748783112,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8704528212547302,0.12954717874526978,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+"What property is characterized by eddies and swirls that mix layers of fluid together, unlike laminar flow?",turbulence,sample_396,sciq,turbulence,"Answer the following science question with a short phrase.
+
+Question: What property is characterized by eddies and swirls that mix layers of fluid together, unlike laminar flow?
+
+Answer:",Turbulent flow,turbulence,ground_truth,turbulence,0,0.0,0,0,0,0.8127655386924744,0.8657868504524231,0.0,0.568935877084732,0.6060507953166961,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8657868504524231,0.1342131495475769,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What type of bonds do alkanes only contain?,carbon-carbon single bonds,sample_409,sciq,carbon-carbon single bonds,"Answer the following science question with a short phrase.
+
+Question: What type of bonds do alkanes only contain?
+
+Answer:",Carbon-carbon and carbon-hydrogen single bonds,carbon-carbon single bonds,ground_truth,carbon-carbon single bonds,0,0.7272727272727273,0,0,0,0.9053758978843689,0.9366515278816223,0.0,0.6337631285190581,0.6556560695171356,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9366515278816223,0.06334847211837769,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+"This heat is used to convert water into steam, which is then used to turn a turbine, thus generating what?",electrical power,sample_415,sciq,electrical power,"Answer the following science question with a short phrase.
+
+Question: This heat is used to convert water into steam, which is then used to turn a turbine, thus generating what?
+
+Answer:",electricity,electrical power,ground_truth,electrical power,0,0.0,0,0,0,0.8583698272705078,0.8643055558204651,0.0,0.6008588790893554,0.6050138890743255,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8643055558204651,0.1356944441795349,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What is the name of the region of a magnet that has the most pull?,pole,sample_431,sciq,pole,"Answer the following science question with a short phrase.
+
+Question: What is the name of the region of a magnet that has the most pull?
+
+Answer:",Poles,pole,ground_truth,pole,0,0.0,0,0,0,0.872344970703125,0.8665637373924255,0.0,0.6106414794921875,0.6065946161746978,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8665637373924255,0.13343626260757446,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What temperature scale is obtained by adding 273 degrees from the corresponding celsius temperature?,kelvin scale,sample_438,sciq,kelvin scale,"Answer the following science question with a short phrase.
+
+Question: What temperature scale is obtained by adding 273 degrees from the corresponding celsius temperature?
+
+Answer:",Kelvin,kelvin scale,ground_truth,kelvin scale,0,0.6666666666666666,0,0,0,0.8134966492652893,0.9069659113883972,0.0,0.5694476544857024,0.634876137971878,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9069659113883972,0.09303408861160278,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+Where are aerofoils found?,birds and airplanes,sample_458,sciq,birds and airplanes,"Answer the following science question with a short phrase.
+
+Question: Where are aerofoils found?
+
+Answer:",Airplanes,birds and airplanes,ground_truth,birds and airplanes,0,0.5,0,0,0,0.75886470079422,0.8245503902435303,0.0,0.5312052905559539,0.5771852731704712,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8245503902435303,0.17544960975646973,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+Frequency and intensity are two measurable properties of what?,wave,sample_462,sciq,wave,"Answer the following science question with a short phrase.
+
+Question: Frequency and intensity are two measurable properties of what?
+
+Answer:",waves,wave,ground_truth,wave,0,0.0,0,0,0,0.9182223677635193,0.9254010319709778,0.0,0.6427556574344635,0.6477807223796844,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.9254010319709778,0.07459896802902222,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+An action potential that starts at the axon hillock moves along the axon only toward what?,the synaptic terminals,sample_469,sciq,the synaptic terminals,"Answer the following science question with a short phrase.
+
+Question: An action potential that starts at the axon hillock moves along the axon only toward what?
+
+Answer:",axon terminals,the synaptic terminals,ground_truth,the synaptic terminals,0,0.5,0,0,0,0.5886073112487793,0.8400043845176697,0.5,0.5620251178741456,0.7380030691623688,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8400043845176697,0.15999561548233032,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+"The coccyx, or tailbone, results from the fusion of four small what?",coccygeal vertebrae,sample_484,sciq,coccygeal vertebrae,"Answer the following science question with a short phrase.
+
+Question: The coccyx, or tailbone, results from the fusion of four small what?
+
+Answer:",vertebrae,coccygeal vertebrae,ground_truth,coccygeal vertebrae,0,0.6666666666666666,0,0,0,0.7477852702140808,0.8137720227241516,0.6666666666666666,0.7234496891498565,0.7696404159069061,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8137720227241516,0.1862279772758484,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+Producers at the base of ecological food webs are also known as?,autotrophic,sample_494,sciq,autotrophic,"Answer the following science question with a short phrase.
+
+Question: Producers at the base of ecological food webs are also known as?
+
+Answer:",Autotrophs,autotrophic,ground_truth,autotrophic,0,0.0,0,0,0,0.8083309531211853,0.8845458030700684,0.0,0.5658316671848297,0.6191820621490478,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8845458030700684,0.11545419692993164,semantic_similarity_limitation,relatedness_over_scoring,BGE over-scores related concepts that may not be correct.
+What is the study of the similarities and differences in the embryos of different species?,comparative embryology,sample_497,sciq,comparative embryology,"Answer the following science question with a short phrase.
+
+Question: What is the study of the similarities and differences in the embryos of different species?
+
+Answer:",Embryology,comparative embryology,ground_truth,comparative embryology,0,0.6666666666666666,0,0,0,0.8779029250144958,0.8416483998298645,0.0,0.614532047510147,0.5891538798809051,baseline,results_sciq_500,short_form,BGE,high_similarity_wrong,0.8416483998298645,0.1583516001701355,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+What phenomenon is primarily the result of plate tectonic motions?,earthquake,sample_41,sciq,earthquake,"Answer the following science question with a short phrase.
+
+Question: What phenomenon is primarily the result of plate tectonic motions?
+
+Answer:",Earthquakes,earthquake,ground_truth,earthquake,0,0.0,0,0,0,0.9081757068634033,0.9273387789726257,0.0,0.6357229948043823,0.649137145280838,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.9081757068634033,0.09182429313659668,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+What's the term for the gradual progression from simple plants to larger more complex ones in an area?,primary succession,sample_63,sciq,primary succession,"Answer the following science question with a short phrase.
+
+Question: What's the term for the gradual progression from simple plants to larger more complex ones in an area?
+
+Answer:",Succession,primary succession,ground_truth,primary succession,0,0.6666666666666666,0,0,0,0.8740105032920837,0.819545328617096,0.0,0.6118073523044586,0.5736817300319671,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8740105032920837,0.12598949670791626,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+An endocrine disease usually involves the secretion of too much or not enough of what?,hormone,sample_82,sciq,hormone,"Answer the following science question with a short phrase.
+
+Question: An endocrine disease usually involves the secretion of too much or not enough of what?
+
+Answer:",hormones,hormone,ground_truth,hormone,0,0.0,0,0,0,0.8980160355567932,0.912589430809021,0.0,0.6286112248897552,0.6388126015663147,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8980160355567932,0.10198396444320679,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+Most of the pathogens that cause stis enter the body through mucous membranes of which organs?,reproductive organs,sample_88,sciq,reproductive organs,"Answer the following science question with a short phrase.
+
+Question: Most of the pathogens that cause stis enter the body through mucous membranes of which organs?
+
+Answer:",Sexual organs.,reproductive organs,ground_truth,reproductive organs,0,0.5,0,0,0,0.8157496452331543,0.8409343957901001,0.0,0.571024751663208,0.58865407705307,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8157496452331543,0.1842503547668457,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+"When water goes above and below its freezing point, what rock-breaking phenomenon is common?",ice wedging,sample_95,sciq,ice wedging,"Answer the following science question with a short phrase.
+
+Question: When water goes above and below its freezing point, what rock-breaking phenomenon is common?
+
+Answer:",Frost wedging,ice wedging,ground_truth,ice wedging,0,0.5,0,0,0,0.8144584894180298,0.8935739398002625,0.0,0.5701209425926208,0.6255017578601837,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8144584894180298,0.18554151058197021,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+Phosphate-containing ocean sediments form primarily from the bodies of ocean organisms and from their what?,excretions,sample_120,sciq,excretions,"Answer the following science question with a short phrase.
+
+Question: Phosphate-containing ocean sediments form primarily from the bodies of ocean organisms and from their what?
+
+Answer:",excreta,excretions,ground_truth,excretions,0,0.0,0,0,0,0.8667147755622864,0.8599010705947876,0.0,0.6067003428936004,0.6019307494163513,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8667147755622864,0.13328522443771362,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+"A few earthquakes take place away from plate boundaries, these are called what?",intraplate earthquakes,sample_124,sciq,intraplate earthquakes,"Answer the following science question with a short phrase.
+
+Question: A few earthquakes take place away from plate boundaries, these are called what?
+
+Answer:",Intra-plate earthquakes,intraplate earthquakes,ground_truth,intraplate earthquakes,0,0.4,0,0,0,0.8981689214706421,0.976912796497345,0.0,0.6287182450294494,0.6838389575481414,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8981689214706421,0.10183107852935791,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+What do ranchers fear will happen if wolves return?,livestock predation,sample_152,sciq,livestock predation,"Answer the following science question with a short phrase.
+
+Question: What do ranchers fear will happen if wolves return?
+
+Answer:",Increased predation on livestock.,livestock predation,ground_truth,livestock predation,0,0.6666666666666666,0,0,0,0.9306113719940186,0.9186480045318604,0.0,0.651427960395813,0.6430536031723022,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.9306113719940186,0.06938862800598145,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+Global warming will raise ocean levels due to melt water from glaciers and the greater volume of what?,warmer water,sample_216,sciq,warmer water,"Answer the following science question with a short phrase.
+
+Question: Global warming will raise ocean levels due to melt water from glaciers and the greater volume of what?
+
+Answer:",warm water,warmer water,ground_truth,warmer water,0,0.5,0,0,0,0.9005037546157837,0.9438207149505615,0.5,0.7803526282310486,0.810674500465393,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.9005037546157837,0.09949624538421631,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What does the driving of turbines by the heating of water to steam accomplish?,generation of electricity,sample_220,sciq,generation of electricity,"Answer the following science question with a short phrase.
+
+Question: What does the driving of turbines by the heating of water to steam accomplish?
+
+Answer:",Generates electricity.,generation of electricity,ground_truth,generation of electricity,0,0.4,0,0,0,0.8558415770530701,0.884177565574646,0.0,0.599089103937149,0.6189242959022522,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8558415770530701,0.14415842294692993,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What is a device that changes kinetic energy to electrical energy through electromagnetic induction?,an electric generator,sample_221,sciq,an electric generator,"Answer the following science question with a short phrase.
+
+Question: What is a device that changes kinetic energy to electrical energy through electromagnetic induction?
+
+Answer:",Generator,an electric generator,ground_truth,an electric generator,0,0.6666666666666666,0,0,0,0.8309645652770996,0.8594817519187927,0.0,0.5816751956939696,0.6016372263431549,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8309645652770996,0.1690354347229004,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+What are formed by the attraction between oppositely charged ions?,ionic bonds,sample_265,sciq,ionic bonds,"Answer the following science question with a short phrase.
+
+Question: What are formed by the attraction between oppositely charged ions?
+
+Answer:",Ionic compounds,ionic bonds,ground_truth,ionic bonds,0,0.5,0,0,0,0.8100942969322205,0.8575113415718079,0.0,0.5670660078525542,0.6002579391002655,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8100942969322205,0.18990570306777954,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+What are the two distinct types of cells found in the animal kingdom?,prokaryotes and eukaryotes,sample_292,sciq,prokaryotes and eukaryotes,"Answer the following science question with a short phrase.
+
+Question: What are the two distinct types of cells found in the animal kingdom?
+
+Answer:",Eukaryotic and prokaryotic,prokaryotes and eukaryotes,ground_truth,prokaryotes and eukaryotes,0,0.3333333333333333,0,0,0,0.9513198733329773,0.9660742878913879,0.0,0.665923911333084,0.6762520015239715,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.9513198733329773,0.048680126667022705,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+What are the 2 primary hosts of ebola in central africa?,apes and bats,sample_330,sciq,apes and bats,"Answer the following science question with a short phrase.
+
+Question: What are the 2 primary hosts of ebola in central africa?
+
+Answer:",Bats and primates,apes and bats,ground_truth,apes and bats,0,0.6666666666666666,0,0,0,0.9175637364387512,0.9147254228591919,0.0,0.6422946155071259,0.6403077960014343,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.9175637364387512,0.08243626356124878,automatic_label_artifact,paraphrase_alias_or_surface_mismatch,"Prediction is likely a paraphrase, alias, or surface-form variant."
+Both diffusion and effusion are related to the speed at which what objects move?,gas molecules,sample_372,sciq,gas molecules,"Answer the following science question with a short phrase.
+
+Question: Both diffusion and effusion are related to the speed at which what objects move?
+
+Answer:",molecules,gas molecules,ground_truth,gas molecules,0,0.6666666666666666,0,0,0,0.801552951335907,0.8762999773025513,0.6666666666666666,0.7610870659351348,0.8134099841117859,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.801552951335907,0.19844704866409302,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+"What property is characterized by eddies and swirls that mix layers of fluid together, unlike laminar flow?",turbulence,sample_396,sciq,turbulence,"Answer the following science question with a short phrase.
+
+Question: What property is characterized by eddies and swirls that mix layers of fluid together, unlike laminar flow?
+
+Answer:",Turbulent flow,turbulence,ground_truth,turbulence,0,0.0,0,0,0,0.8127655386924744,0.8657868504524231,0.0,0.568935877084732,0.6060507953166961,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8127655386924744,0.18723446130752563,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+What type of bonds do alkanes only contain?,carbon-carbon single bonds,sample_409,sciq,carbon-carbon single bonds,"Answer the following science question with a short phrase.
+
+Question: What type of bonds do alkanes only contain?
+
+Answer:",Carbon-carbon and carbon-hydrogen single bonds,carbon-carbon single bonds,ground_truth,carbon-carbon single bonds,0,0.7272727272727273,0,0,0,0.9053758978843689,0.9366515278816223,0.0,0.6337631285190581,0.6556560695171356,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.9053758978843689,0.0946241021156311,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+"This heat is used to convert water into steam, which is then used to turn a turbine, thus generating what?",electrical power,sample_415,sciq,electrical power,"Answer the following science question with a short phrase.
+
+Question: This heat is used to convert water into steam, which is then used to turn a turbine, thus generating what?
+
+Answer:",electricity,electrical power,ground_truth,electrical power,0,0.0,0,0,0,0.8583698272705078,0.8643055558204651,0.0,0.6008588790893554,0.6050138890743255,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8583698272705078,0.1416301727294922,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+What is the name of the region of a magnet that has the most pull?,pole,sample_431,sciq,pole,"Answer the following science question with a short phrase.
+
+Question: What is the name of the region of a magnet that has the most pull?
+
+Answer:",Poles,pole,ground_truth,pole,0,0.0,0,0,0,0.872344970703125,0.8665637373924255,0.0,0.6106414794921875,0.6065946161746978,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.872344970703125,0.127655029296875,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+How many major forces of elevation cause allele frequencies to change?,four,sample_432,sciq,four,"Answer the following science question with a short phrase.
+
+Question: How many major forces of elevation cause allele frequencies to change?
+
+Answer:",Three,four,ground_truth,four,0,0.0,0,0,0,0.8232484459877014,0.6993290185928345,0.0,0.5762739121913909,0.4895303130149841,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8232484459877014,0.17675155401229858,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+What temperature scale is obtained by adding 273 degrees from the corresponding celsius temperature?,kelvin scale,sample_438,sciq,kelvin scale,"Answer the following science question with a short phrase.
+
+Question: What temperature scale is obtained by adding 273 degrees from the corresponding celsius temperature?
+
+Answer:",Kelvin,kelvin scale,ground_truth,kelvin scale,0,0.6666666666666666,0,0,0,0.8134966492652893,0.9069659113883972,0.0,0.5694476544857024,0.634876137971878,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8134966492652893,0.1865033507347107,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+Frequency and intensity are two measurable properties of what?,wave,sample_462,sciq,wave,"Answer the following science question with a short phrase.
+
+Question: Frequency and intensity are two measurable properties of what?
+
+Answer:",waves,wave,ground_truth,wave,0,0.0,0,0,0,0.9182223677635193,0.9254010319709778,0.0,0.6427556574344635,0.6477807223796844,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.9182223677635193,0.08177763223648071,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+How many different types of stresses are there?,four,sample_486,sciq,four,"Answer the following science question with a short phrase.
+
+Question: How many different types of stresses are there?
+
+Answer:",Three,four,ground_truth,four,0,0.0,0,0,0,0.8232484459877014,0.6993290185928345,0.0,0.5762739121913909,0.4895303130149841,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8232484459877014,0.17675155401229858,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+Producers at the base of ecological food webs are also known as?,autotrophic,sample_494,sciq,autotrophic,"Answer the following science question with a short phrase.
+
+Question: Producers at the base of ecological food webs are also known as?
+
+Answer:",Autotrophs,autotrophic,ground_truth,autotrophic,0,0.0,0,0,0,0.8083309531211853,0.8845458030700684,0.0,0.5658316671848297,0.6191820621490478,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8083309531211853,0.1916690468788147,semantic_similarity_limitation,semantic_relatedness_not_correctness,Relatedness alone does not prove factual correctness.
+What is the study of the similarities and differences in the embryos of different species?,comparative embryology,sample_497,sciq,comparative embryology,"Answer the following science question with a short phrase.
+
+Question: What is the study of the similarities and differences in the embryos of different species?
+
+Answer:",Embryology,comparative embryology,ground_truth,comparative embryology,0,0.6666666666666666,0,0,0,0.8779029250144958,0.8416483998298645,0.0,0.614532047510147,0.5891538798809051,baseline,results_sciq_500,short_form,MiniLM,high_similarity_wrong,0.8779029250144958,0.12209707498550415,semantic_similarity_limitation,under_or_over_specific_answer,Answer changes the specificity required by the question.
+"When populations get close to the carrying capacity, what happens to growth?",slows,sample_77,sciq,slows,"Answer the following science question with a short phrase.
+
+Question: When populations get close to the carrying capacity, what happens to growth?
+
+Answer:",Growth slows down.,slows,ground_truth,slows,0,0.5,1,0,1,0.3434903025627136,0.7740140557289124,0.0,0.24044321179389952,0.5418098390102386,baseline,results_sciq_500,short_form,MiniLM,low_similarity_correct,0.3434903025627136,0.6565096974372864,low_similarity_false_negative,answer_containment_or_context_dilution,"Correct answer is present or accepted, but extra context lowers similarity."

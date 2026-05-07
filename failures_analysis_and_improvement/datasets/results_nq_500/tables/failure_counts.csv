@@ -1,0 +1,5 @@
+result_group,dataset,model,failure_kind,count,avg_similarity,avg_distance
+implemented_improvement,results_nq_500,BGE,high_similarity_wrong,31,0.838,0.162
+implemented_improvement,results_nq_500,MiniLM,high_similarity_wrong,11,0.868,0.132
+implemented_improvement,results_nq_500,BGE,low_similarity_correct,5,0.448,0.552
+implemented_improvement,results_nq_500,MiniLM,low_similarity_correct,24,0.342,0.658

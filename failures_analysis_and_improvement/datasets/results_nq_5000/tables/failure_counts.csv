@@ -1,0 +1,5 @@
+result_group,dataset,model,failure_kind,count,avg_similarity,avg_distance
+baseline,results_nq_5000,BGE,high_similarity_wrong,794,0.836,0.164
+baseline,results_nq_5000,MiniLM,high_similarity_wrong,422,0.840,0.160
+baseline,results_nq_5000,BGE,low_similarity_correct,16,0.458,0.542
+baseline,results_nq_5000,MiniLM,low_similarity_correct,114,0.294,0.706
