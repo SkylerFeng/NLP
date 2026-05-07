@@ -16,8 +16,9 @@
 - `scripts/`：一键运行流水线的脚本。
 
 **主要实现点（快速指引）**
-- 打标签：`src/correctness_labeling.py` 中的 `label_correctness_for_records` 根据 `prediction` 和 `ground_truth` 计算 `exact_match`、`token_f1`、`contains_ground_truth`，并合成 `correct_label`（关键逻辑在文件内）。
-- 计算相似度：`src/compute_similarity.py` 中的 `add_similarity_scores` 使用 embedding 模型对 `prediction` 与 `ground_truth` 分别做 embedding，并在记录上追加 `similarity_{model_name}` 字段；`threshold_similarity` 可将相似度转成预测标签。
+- 打标签：`src/correctness_labeling.py` 中的 `label_correctness_for_records` 根据 `prediction` 和 evaluation reference 计算 `exact_match`、`token_f1`、`contains_ground_truth`，并合成 `correct_label`（关键逻辑在文件内）。
+- NQ reference 抽取：`src/reference_answer.py` 会为 NQ 从长 Wikipedia evidence passage 中抽取较短的 `reference_answer`，后续打标签、embedding similarity 和 hybrid overlap 默认使用该字段，避免“短预测 vs. 长段落”的表示粒度不匹配。
+- 计算相似度：`src/compute_similarity.py` 中的 `add_similarity_scores` 使用 embedding 模型对 `prediction` 与 evaluation reference 分别做 embedding，并在记录上追加 `similarity_{model_name}` 字段；`threshold_similarity` 可将相似度转成预测标签。
 - 评估：`src/evaluate.py` 使用 `correct_label` 作为真值，比较 similarity-based classifier 与自动标签的表现，并导出失败用例。
 - Baseline / ablation：`scripts/03_evaluate.py` 额外导出 exact match、containment、token F1、entity/token overlap、embedding similarity 和 hybrid score 的对比表。
 
@@ -80,12 +81,14 @@ python scripts/04_visualize_results.py
 
 **配置要点**
 - `config.yaml` 控制数据集、embedding 模型、相似度阈值和 I/O 路径。默认评估标签字段为 `correct_label`（`evaluation.label_field`）。
+- `evaluation.reference_field: auto` 表示 NQ 使用抽取后的 `reference_answer`，其他数据集使用 `ground_truth`。如果要复现实验中的旧 NQ 设置，可显式设为 `ground_truth`。
 - 如果 `project.auto_paths: true`，脚本会忽略手写的 `prediction.input_file` / `similarity.input_file` / `output.*`，改为根据 `data.dataset` 自动生成一致路径。
 - 如果关闭 `auto_paths`，代码会校验 `data.dataset` 与 `prediction.input_file` 是否匹配；不匹配会直接报错，防止 NQ/SciQ 结果混用。
 - 原始教师数据样式：`processed_data/{dataset}/merged_fb.json` 的每行 JSON 包含 `question` 和 `correct_answer`，加载时会创建 `ground_truth` 字段（参见 `src/data_loader.py`）。
 
 **输出与故障样例**
 - 相似度输出示例字段：`similarity_sentence_transformers_all_MiniLM_L6_v2` 或 `similarity_BAAI_bge_base_en_v1_5`（`/` 和 `-` 会被替换成 `_`）。
+- NQ 相似度输出会额外包含 `reference_answer`、`reference_answer_source` 和 `reference_evidence`，用于说明当前评估实际比较的答案文本和其来源证据句。
 - 失败样例会保存到 `results*/failure_cases/`，并且评估表格存于 `results*/tables/evaluation_results.csv`。
 - `results*/tables/dataset_statistics.csv`：数据规模、正确标签比例、答案长度等。
 - `results*/tables/baseline_ablation_results.csv`：baseline、embedding 和 hybrid method 对比。

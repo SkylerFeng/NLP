@@ -14,6 +14,7 @@ from src.evaluate import (
     get_failure_cases,
     summarize_similarity_by_correctness,
 )
+from src.reference_answer import resolve_reference_field
 from src.utils import (
     dataset_task_type,
     ensure_dir,
@@ -52,7 +53,7 @@ def average_token_count(records: list[dict], field: str) -> float:
     return mean(len(str(record.get(field, "")).split()) for record in records)
 
 
-def dataset_statistics(records: list[dict], config: dict) -> list[dict]:
+def dataset_statistics(records: list[dict], config: dict, reference_field: str) -> list[dict]:
     total = len(records)
     correct = sum(int(record.get("correct_label", 0)) for record in records)
     incorrect = total - correct
@@ -67,7 +68,9 @@ def dataset_statistics(records: list[dict], config: dict) -> list[dict]:
             "num_incorrect_label": incorrect,
             "correct_rate": correct / total if total else 0.0,
             "avg_prediction_tokens": average_token_count(records, "prediction"),
-            "avg_reference_tokens": average_token_count(records, "ground_truth"),
+            "avg_ground_truth_tokens": average_token_count(records, "ground_truth"),
+            "avg_evaluation_reference_tokens": average_token_count(records, reference_field),
+            "evaluation_reference_field": reference_field,
             "empty_predictions": sum(
                 1 for record in records if not str(record.get("prediction", "")).strip()
             ),
@@ -82,8 +85,12 @@ def dataset_statistics(records: list[dict], config: dict) -> list[dict]:
     ]
 
 
-def add_hybrid_scores(records: list[dict], embedding_models: list[str]) -> list[dict]:
-    records = add_entity_overlap_scores(records)
+def add_hybrid_scores(
+    records: list[dict],
+    embedding_models: list[str],
+    reference_field: str,
+) -> list[dict]:
+    records = add_entity_overlap_scores(records, reference_field=reference_field)
     output_records = []
 
     for record in records:
@@ -219,6 +226,7 @@ def case_hint(record: dict, failure_kind: str) -> str:
 def build_case_studies(
     records: list[dict],
     config: dict,
+    reference_field: str,
     case_limit: int = 10,
 ) -> list[dict]:
     label_field = config["evaluation"].get("label_field", "correct_label")
@@ -265,6 +273,9 @@ def build_case_studies(
                         "id": record.get("id", ""),
                         "question": record.get("question", ""),
                         "ground_truth": record.get("ground_truth", ""),
+                        "evaluation_reference": record.get(reference_field, ""),
+                        "reference_answer_source": record.get("reference_answer_source", ""),
+                        "reference_evidence": record.get("reference_evidence", ""),
                         "prediction": record.get("prediction", ""),
                         "correct_label": record.get(label_field, ""),
                         "token_f1": record.get("token_f1", ""),
@@ -285,6 +296,7 @@ def main() -> None:
     input_file = config["evaluation"]["input_file"]
     threshold = config["evaluation"].get("similarity_threshold", 0.75)
     label_field = config["evaluation"].get("label_field", "correct_label")
+    reference_field = resolve_reference_field(config)
 
     embedding_models = config["embedding"]["models"]
 
@@ -299,7 +311,8 @@ def main() -> None:
     records = load_jsonl(input_file)
     validate_records_dataset(records, config["data"]["dataset"])
     print(f"Loaded {len(records)} records.")
-    records = add_hybrid_scores(records, embedding_models)
+    print(f"Using evaluation reference field: {reference_field}")
+    records = add_hybrid_scores(records, embedding_models, reference_field)
 
     all_results = []
 
@@ -390,9 +403,9 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(all_results)
 
-    write_csv(table_dir / "dataset_statistics.csv", dataset_statistics(records, config))
+    write_csv(table_dir / "dataset_statistics.csv", dataset_statistics(records, config, reference_field))
     write_csv(table_dir / "baseline_ablation_results.csv", build_baseline_ablation_rows(records, config))
-    write_csv(table_dir / "case_studies.csv", build_case_studies(records, config))
+    write_csv(table_dir / "case_studies.csv", build_case_studies(records, config, reference_field))
 
     metadata = {
         "dataset": config["data"]["dataset"],
@@ -407,6 +420,7 @@ def main() -> None:
         "llm_provider": config["llm"].get("provider"),
         "llm_model": config["llm"].get("model"),
         "embedding_models": config["embedding"]["models"],
+        "evaluation_reference_field": reference_field,
     }
     metadata_path = table_dir / "run_metadata.json"
     with metadata_path.open("w", encoding="utf-8") as f:

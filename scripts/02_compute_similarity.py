@@ -7,6 +7,7 @@ sys.path.append(str(PROJECT_ROOT))
 from src.compute_embeddings import create_embedding_model
 from src.compute_similarity import add_similarity_scores
 from src.correctness_labeling import label_correctness_for_records
+from src.reference_answer import prepare_reference_answers, resolve_reference_field
 from src.utils import (
     ensure_dir,
     load_config,
@@ -34,11 +35,15 @@ def main() -> None:
     validate_records_dataset(records, config["data"]["dataset"])
     print(f"Loaded {len(records)} records.")
 
+    reference_field = resolve_reference_field(config)
+    print(f"Preparing evaluation references with field: {reference_field}")
+    records = prepare_reference_answers(records, config["data"]["dataset"])
+
     print("Labeling correctness...")
     records = label_correctness_for_records(
         records,
         prediction_field="prediction",
-        reference_field="ground_truth",
+        reference_field=reference_field,
         f1_threshold=0.8,
     )
 
@@ -53,7 +58,7 @@ def main() -> None:
             embedding_model_name=model_name,
             batch_size=batch_size,
             prediction_field="prediction",
-            reference_field="ground_truth",
+            reference_field=reference_field,
         )
 
     print(f"Saving similarity results to: {output_file}")
