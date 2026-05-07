@@ -1,0 +1,18 @@
+{
+  "dataset": "sciq",
+  "task_type": "short_form",
+  "sample_size": 500,
+  "prediction_input_file": "processed_data/sciq/merged_fb.json",
+  "prediction_output_file": "data/predictions/sciq_qwen25_7b_instruct_predictions_500.jsonl",
+  "similarity_input_file": "data/predictions/sciq_qwen25_7b_instruct_predictions_500.jsonl",
+  "similarity_output_file": "data/similarity/sciq_qwen25_7b_instruct_similarity_500.jsonl",
+  "evaluation_input_file": "data/similarity/sciq_qwen25_7b_instruct_similarity_500.jsonl",
+  "results_dir": "results_sciq_500",
+  "llm_provider": "qwen",
+  "llm_model": "qwen2.5-7b-instruct",
+  "embedding_models": [
+    "sentence-transformers/all-MiniLM-L6-v2",
+    "BAAI/bge-base-en-v1.5"
+  ],
+  "evaluation_reference_field": "ground_truth"
+}

@@ -1,0 +1,2 @@
+dataset,task_type,sample_size,num_records,num_correct_label,num_incorrect_label,correct_rate,avg_prediction_tokens,avg_ground_truth_tokens,avg_evaluation_reference_tokens,evaluation_reference_field,empty_predictions,exact_match_count,contains_ground_truth_count,avg_token_f1
+sciq,short_form,500,500,303,197,0.606,1.83,1.468,1.468,ground_truth,0,241,297,0.6157832611832612

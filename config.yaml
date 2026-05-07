@@ -11,7 +11,7 @@ data:
   # nq
   # simple_questions_wiki
   # truthfulQA
-  dataset: truthfulQA
+  dataset: sciq
 
   # 老师给的数据目录
   data_root: processed_data
