@@ -105,3 +105,46 @@ def plot_pr_curve(
     plt.tight_layout()
     plt.savefig(output_path, dpi=200)
     plt.close()
+
+
+def plot_similarity_correlation(
+    records: List[Dict],
+    similarity_field: str,
+    label_field: str = "correct_label",
+    lexical_field: str = "token_f1",
+    output_path: str | Path = "results/figures/correlation.png",
+) -> None:
+    """
+    Plot embedding similarity against a lexical correctness proxy.
+    """
+    x_values = np.array([float(record.get(lexical_field, 0.0)) for record in records])
+    y_values = np.array([float(record[similarity_field]) for record in records])
+    labels = np.array([int(record[label_field]) for record in records])
+
+    output_path = Path(output_path)
+    ensure_dir(output_path.parent)
+
+    plt.figure(figsize=(6.5, 5.5))
+    for label, name, alpha in [(0, "Incorrect", 0.45), (1, "Correct", 0.55)]:
+        mask = labels == label
+        plt.scatter(
+            x_values[mask],
+            y_values[mask],
+            s=12,
+            alpha=alpha,
+            label=name,
+            edgecolors="none",
+        )
+
+    if len(x_values) > 1:
+        corr = float(np.corrcoef(x_values, y_values)[0, 1])
+    else:
+        corr = float("nan")
+
+    plt.xlabel(lexical_field)
+    plt.ylabel("Embedding similarity")
+    plt.title(f"Similarity vs. {lexical_field} (r={corr:.3f})")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=200)
+    plt.close()

@@ -115,7 +115,7 @@ def build_prompt_for_qa(
     """
     if dataset_name == "truthfulQA":
         return (
-            "Answer the following question truthfully and concisely.\n\n"
+            "Answer the following question truthfully in one or two concise sentences.\n\n"
             f"Question: {question}\n\n"
             "Answer:"
         )
@@ -127,8 +127,22 @@ def build_prompt_for_qa(
             "Answer:"
         )
 
+    if dataset_name == "simple_questions_wiki":
+        return (
+            "Answer the following factual question with a short phrase.\n\n"
+            f"Question: {question}\n\n"
+            "Answer:"
+        )
+
+    if dataset_name == "nq":
+        return (
+            "Answer the following question in one or two concise sentences.\n\n"
+            f"Question: {question}\n\n"
+            "Answer:"
+        )
+
     return (
-        "Answer the following question with a short phrase.\n\n"
+        "Answer the following question concisely.\n\n"
         f"Question: {question}\n\n"
         "Answer:"
     )

@@ -7,7 +7,14 @@ sys.path.append(str(PROJECT_ROOT))
 from src.compute_embeddings import create_embedding_model
 from src.compute_similarity import add_similarity_scores
 from src.correctness_labeling import label_correctness_for_records
-from src.utils import ensure_dir, load_config, load_jsonl, save_jsonl
+from src.utils import (
+    ensure_dir,
+    load_config,
+    load_jsonl,
+    print_config_summary,
+    save_jsonl,
+    validate_records_dataset,
+)
 
 
 def main() -> None:
@@ -21,8 +28,10 @@ def main() -> None:
 
     ensure_dir(Path(output_file).parent)
 
+    print_config_summary(config)
     print(f"Loading predictions from: {input_file}")
     records = load_jsonl(input_file)
+    validate_records_dataset(records, config["data"]["dataset"])
     print(f"Loaded {len(records)} records.")
 
     print("Labeling correctness...")

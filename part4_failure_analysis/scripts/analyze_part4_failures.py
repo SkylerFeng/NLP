@@ -12,7 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_ROOT = PROJECT_ROOT / "part4_failure_analysis"
 
 RESULT_DIRS = {
-    "results_nq": PROJECT_ROOT / "results_nq",
+    "results_nq_5000": PROJECT_ROOT / "results_nq_5000",
     "results_sciq_5000": PROJECT_ROOT / "results_sciq_5000",
     "results_truthfulQA_500": PROJECT_ROOT / "results_truthfulQA_500",
     "results_wiki": PROJECT_ROOT / "results_wiki",
@@ -708,9 +708,9 @@ def build_summary_report(dataset_results: list[dict]) -> None:
         "Chinese version: `summary_report.zh.md`.",
         "",
         "## Scope",
-        "This folder summarizes failure cases from `results_nq`, `results_sciq_5000`, `results_truthfulQA_500`, and `results_wiki`. A failure case means that the embedding-similarity correctness decision disagrees with the automatic correctness label.",
+        "This folder summarizes failure cases from `results_nq_5000`, `results_sciq_5000`, `results_truthfulQA_500`, and `results_wiki`. A failure case means that the embedding-similarity correctness decision disagrees with the automatic correctness label.",
         "",
-        "Important caveat: the inspected `results_nq` examples look like short-form science QA rather than Natural Questions long-form QA. Treat that folder cautiously unless the original intermediate prediction file is recovered.",
+        "Important caveat: older `results_nq` outputs were path-mismatched and looked like short-form science QA. Use regenerated `results_nq_5000` outputs for Natural Questions analysis.",
         "",
         "## Embedding Model Comparison",
         markdown_table(metric_display, ["Dataset", "Model", "Gap", "Fixed F1", "Best Thresh.", "Best F1", "ROC-AUC"]),
@@ -750,9 +750,9 @@ def build_summary_report(dataset_results: list[dict]) -> None:
         "英文版本见：`summary_report.md`。",
         "",
         "## 分析范围",
-        "本目录汇总了 `results_nq`、`results_sciq_5000`、`results_truthfulQA_500` 和 `results_wiki` 四个结果目录中的 failure cases。这里的 failure case 指的是：基于 embedding similarity threshold 得到的正确/错误判断，与自动生成的 `correct_label` 不一致。",
+        "本目录汇总了 `results_nq_5000`、`results_sciq_5000`、`results_truthfulQA_500` 和 `results_wiki` 四个结果目录中的 failure cases。这里的 failure case 指的是：基于 embedding similarity threshold 得到的正确/错误判断，与自动生成的 `correct_label` 不一致。",
         "",
-        "重要提示：人工查看后发现，`results_nq` 中的样例看起来更像 short-form science QA，而不像真正的 Natural Questions long-form QA。因此在正式报告中使用 `results_nq` 时需要谨慎，最好先找回原始 prediction/similarity 中间文件确认数据来源。",
+        "重要提示：旧的 `results_nq` 输出存在路径混用风险，样例看起来更像 short-form science QA。Natural Questions 分析应使用重新生成的 `results_nq_5000`。",
         "",
         "## 两种 Embedding Model 对比",
         markdown_table(metric_display, ["Dataset", "Model", "Gap", "Fixed F1", "Best Thresh.", "Best F1", "ROC-AUC"]),

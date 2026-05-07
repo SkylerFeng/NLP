@@ -1,6 +1,9 @@
 project:
   name: semantic-similarity-llm-eval
   seed: 42
+  # If true, scripts derive input/output paths from data.dataset and sample_size.
+  # This prevents writing SciQ outputs into an NQ result folder.
+  auto_paths: true
 
 data:
   # 可选值：
@@ -8,7 +11,7 @@ data:
   # nq
   # simple_questions_wiki
   # truthfulQA
-  dataset: simple_questions_wiki
+  dataset: truthfulQA
 
   # 老师给的数据目录
   data_root: processed_data
@@ -16,7 +19,7 @@ data:
 
   # 如果只想先测试，可以设置 sample_size: 20
   # 如果想跑全量，改成 null
-  sample_size: 5000
+  sample_size: 500
 
   prediction_dir: data/predictions
   similarity_dir: data/similarity
@@ -24,6 +27,7 @@ data:
 llm:
   provider: qwen
   model: qwen2.5-7b-instruct
+  run_name: qwen25_7b_instruct
   temperature: 0.0
   max_tokens: 64
   sleep_seconds: 0.2
@@ -31,11 +35,10 @@ llm:
   api_key_env: DASHSCOPE_API_KEY
 
 prediction:
-  # 老师给的数据文件
+  # These path fields are auto-filled when project.auto_paths is true.
   input_file: processed_data/sciq/merged_fb.json
 
-  # Qwen2.5-7B-Instruct 的预测结果输出
-  output_file: data/predictions/sciq_qwen25_7b_instruct_predictions_20.jsonl
+  output_file: data/predictions/sciq_qwen25_7b_instruct_predictions_5000.jsonl
 
   use_support: false
 
@@ -46,16 +49,17 @@ embedding:
   batch_size: 32
 
 similarity:
-  input_file: data/predictions/sciq_qwen25_7b_instruct_predictions_20.jsonl
-  output_file: data/similarity/sciq_qwen25_7b_instruct_similarity_20.jsonl
+  input_file: data/predictions/sciq_qwen25_7b_instruct_predictions_5000.jsonl
+  output_file: data/similarity/sciq_qwen25_7b_instruct_similarity_5000.jsonl
 
 evaluation:
-  input_file: data/similarity/sciq_qwen25_7b_instruct_similarity_20.jsonl
+  input_file: data/similarity/sciq_qwen25_7b_instruct_similarity_5000.jsonl
   similarity_threshold: 0.75
   label_field: correct_label
 
 output:
-  results_dir: results
-  figure_dir: results/figures
-  table_dir: results/tables
-  failure_case_dir: results/failure_cases
+  results_dir: results_sciq_5000
+  figure_dir: results_sciq_5000/figures
+  table_dir: results_sciq_5000/tables
+  failure_case_dir: results_sciq_5000/failure_cases
+  report_asset_dir: results_sciq_5000/report_assets

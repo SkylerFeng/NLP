@@ -1,7 +1,24 @@
 import re
 from typing import Dict, List
 
-from src.utils import normalize_text
+from src.utils import dataset_task_type, normalize_text
+
+
+NUMBER_WORDS = {
+    "zero": "0",
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+    "eleven": "11",
+    "twelve": "12",
+}
 
 
 def remove_articles(text: str) -> str:
@@ -22,11 +39,25 @@ def normalize_answer(text: str) -> str:
     """
     Normalize answer for exact match / token F1.
     """
-    text = normalize_text(text)
+    text = normalize_text(text).replace("-", " ")
     text = remove_articles(text)
     text = remove_punctuation(text)
-    text = " ".join(text.split())
+    tokens = [simple_lemma(NUMBER_WORDS.get(token, token)) for token in text.split()]
+    text = " ".join(tokens)
     return text
+
+
+def simple_lemma(token: str) -> str:
+    """
+    Lightweight plural handling for short-answer labels.
+    """
+    if token.endswith("ies") and len(token) > 4:
+        return token[:-3] + "y"
+    if token.endswith("es") and len(token) > 4:
+        return token[:-2]
+    if token.endswith("s") and len(token) > 3:
+        return token[:-1]
+    return token
 
 
 def exact_match_score(prediction: str, ground_truth: str) -> int:
@@ -76,6 +107,25 @@ def contains_ground_truth(prediction: str, ground_truth: str) -> int:
     return int(gt_norm in pred_norm)
 
 
+def contains_prediction_in_reference(prediction: str, ground_truth: str) -> int:
+    """
+    Check whether a concise prediction appears inside a longer reference.
+    This is mainly useful for long-form datasets where references are passages.
+    """
+    pred_norm = normalize_answer(prediction)
+    gt_norm = normalize_answer(ground_truth)
+
+    if not pred_norm or not gt_norm:
+        return 0
+
+    pred_tokens = pred_norm.split()
+    has_number = any(re.fullmatch(r"\d+(?:\.\d+)?", token) for token in pred_tokens)
+    if len(pred_tokens) < 2 and not has_number:
+        return 0
+
+    return int(pred_norm in gt_norm)
+
+
 def label_correctness_for_record(
     record: Dict,
     prediction_field: str = "prediction",
@@ -100,13 +150,24 @@ def label_correctness_for_record(
     em = exact_match_score(prediction, ground_truth)
     f1 = token_f1_score(prediction, ground_truth)
     contains = contains_ground_truth(prediction, ground_truth)
+    reference_contains_prediction = contains_prediction_in_reference(
+        prediction,
+        ground_truth,
+    )
+    is_long_form = dataset_task_type(record.get("dataset", "")) == "long_form"
 
-    correct_label = int(em == 1 or contains == 1 or f1 >= f1_threshold)
+    correct_label = int(
+        em == 1
+        or contains == 1
+        or f1 >= f1_threshold
+        or (is_long_form and reference_contains_prediction == 1)
+    )
 
     new_record = dict(record)
     new_record["exact_match"] = em
     new_record["token_f1"] = f1
     new_record["contains_ground_truth"] = contains
+    new_record["contains_prediction_in_reference"] = reference_contains_prediction
     new_record["correct_label"] = correct_label
 
     return new_record

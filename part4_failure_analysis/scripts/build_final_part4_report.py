@@ -29,7 +29,7 @@ def markdown_table(rows: list[dict], columns: list[str]) -> str:
 
 def short_dataset(name: str) -> str:
     mapping = {
-        "results_nq": "NQ-like",
+        "results_nq_5000": "Natural Questions",
         "results_sciq_5000": "SciQ",
         "results_truthfulQA_500": "TruthfulQA",
         "results_wiki": "Wiki",
@@ -459,9 +459,9 @@ def build_reports() -> None:
         "This distinction is important: these are failures of the similarity-as-classifier pipeline, not always failures of the LLM answer. Some cases reveal defects in the automatic label itself.",
         "",
         "## 2. Data and Outputs Used",
-        "We analyze four result folders: `results_nq`, `results_sciq_5000`, `results_truthfulQA_500`, and `results_wiki`. For each folder, we use the evaluation table, failure-case JSONL files, and the sampled human annotations in `manual_annotation_sample.csv`.",
+        "We analyze four result folders: `results_nq_5000`, `results_sciq_5000`, `results_truthfulQA_500`, and `results_wiki`. For each folder, we use the evaluation table, failure-case JSONL files, and the sampled human annotations in `manual_annotation_sample.csv`.",
         "",
-        "Caveat: inspected examples in `results_nq` look like short-form science QA rather than true Natural Questions long-form QA. We therefore treat `results_nq` as an additional result folder, but avoid making strong claims about long-form NQ behavior from it alone.",
+        "Caveat: older `results_nq` outputs were path-mismatched and looked like short-form science QA. Natural Questions claims should use regenerated `results_nq_5000` outputs.",
         "",
         "## 3. Embedding Model Comparison",
         "![Model metric comparison](figures/model_metric_comparison.svg)",
@@ -538,9 +538,9 @@ def build_reports() -> None:
         "需要注意的是，这些 failure case 是 similarity-as-classifier pipeline 的失败，不一定都是 LLM 答错。有些样例反而暴露了自动标签本身的问题。",
         "",
         "## 2. 使用的数据与结果",
-        "我们分析了四个结果目录：`results_nq`、`results_sciq_5000`、`results_truthfulQA_500` 和 `results_wiki`。每个目录使用 evaluation table、failure-case JSONL 文件，以及 `manual_annotation_sample.csv` 中的人工标注样本。",
+        "我们分析了四个结果目录：`results_nq_5000`、`results_sciq_5000`、`results_truthfulQA_500` 和 `results_wiki`。每个目录使用 evaluation table、failure-case JSONL 文件，以及 `manual_annotation_sample.csv` 中的人工标注样本。",
         "",
-        "注意：人工查看后，`results_nq` 中的样例看起来更像 short-form science QA，而不像真正的 Natural Questions long-form QA。因此这里把它作为一个额外结果目录分析，但不单独用它支撑关于 NQ long-form 的强结论。",
+        "注意：旧的 `results_nq` 输出存在路径混用风险，样例看起来更像 short-form science QA。Natural Questions 结论应基于重新生成的 `results_nq_5000`。",
         "",
         "## 3. Embedding Model 对比",
         "![Model metric comparison](figures/model_metric_comparison.svg)",

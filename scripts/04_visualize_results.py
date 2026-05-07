@@ -4,10 +4,11 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
 
-from src.utils import ensure_dir, load_config, load_jsonl
+from src.utils import ensure_dir, load_config, load_jsonl, print_config_summary, validate_records_dataset
 from src.visualize import (
     plot_pr_curve,
     plot_roc_curve,
+    plot_similarity_correlation,
     plot_similarity_distribution,
 )
 
@@ -27,8 +28,10 @@ def main() -> None:
 
     ensure_dir(figure_dir)
 
+    print_config_summary(config)
     print(f"Loading results from: {input_file}")
     records = load_jsonl(input_file)
+    validate_records_dataset(records, config["data"]["dataset"])
     print(f"Loaded {len(records)} records.")
 
     for model_name in embedding_models:
@@ -62,9 +65,19 @@ def main() -> None:
             output_path=pr_path,
         )
 
+        corr_path = figure_dir / f"similarity_correlation_{model_key}.png"
+        plot_similarity_correlation(
+            records=records,
+            similarity_field=similarity_field,
+            label_field=label_field,
+            lexical_field="token_f1",
+            output_path=corr_path,
+        )
+
         print(f"Saved: {distribution_path}")
         print(f"Saved: {roc_path}")
         print(f"Saved: {pr_path}")
+        print(f"Saved: {corr_path}")
 
     print("Visualization finished.")
 

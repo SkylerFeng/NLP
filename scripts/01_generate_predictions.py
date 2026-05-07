@@ -8,7 +8,7 @@ from src.generate_predictions import (
     create_llm_client,
     generate_predictions_from_file,
 )
-from src.utils import ensure_dir, load_config
+from src.utils import ensure_dir, load_config, print_config_summary
 
 
 def main() -> None:
@@ -22,8 +22,7 @@ def main() -> None:
 
     llm_client = create_llm_client(config)
 
-    print(f"Input file: {input_file}")
-    print(f"Output file: {output_file}")
+    print_config_summary(config)
     print(f"Use support: {use_support}")
     print(f"LLM provider: {config['llm']['provider']}")
     print(f"LLM model: {config['llm']['model']}")
@@ -33,6 +32,7 @@ def main() -> None:
         output_path=output_file,
         llm_client=llm_client,
         use_support=use_support,
+        dataset_name=config["data"]["dataset"],
         sample_size=config["data"].get("sample_size"),
     )
 

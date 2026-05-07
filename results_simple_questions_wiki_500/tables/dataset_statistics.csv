@@ -1,0 +1,2 @@
+dataset,task_type,sample_size,num_records,num_correct_label,num_incorrect_label,correct_rate,avg_prediction_tokens,avg_reference_tokens,empty_predictions,exact_match_count,contains_ground_truth_count,avg_token_f1
+simple_questions_wiki,short_form,500,500,92,408,0.184,2.122,1.84,0,73,91,0.22010476190476191

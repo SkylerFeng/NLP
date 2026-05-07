@@ -1,0 +1,2 @@
+dataset,task_type,sample_size,num_records,num_correct_label,num_incorrect_label,correct_rate,avg_prediction_tokens,avg_reference_tokens,empty_predictions,exact_match_count,contains_ground_truth_count,avg_token_f1
+truthfulQA,long_form,500,500,41,459,0.082,12.998,9.644,0,11,20,0.3179747868099498

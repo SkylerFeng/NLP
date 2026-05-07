@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from tqdm import tqdm
 
-from src.data_loader import build_prompt_for_short_answer
+from src.data_loader import build_prompt_for_qa
 from src.utils import load_jsonl, save_jsonl
 
 
@@ -85,7 +85,7 @@ class OpenAICompatibleLLMClient(BaseLLMClient):
                 {
                     "role": "system",
                     "content": (
-                        "You answer science questions concisely and directly. "
+                        "You answer questions concisely and directly. "
                         "Return only the short answer, without explanation."
                     ),
                 },
@@ -146,6 +146,7 @@ def generate_predictions_for_records(
     records: List[Dict],
     llm_client: BaseLLMClient,
     use_support: bool = False,
+    dataset_name: str | None = None,
 ) -> List[Dict]:
     """
     Generate predictions for a list of QA records.
@@ -163,6 +164,8 @@ def generate_predictions_for_records(
     for record in tqdm(records, desc="Generating predictions"):
         question = record["question"]
 
+        record_dataset = record.get("dataset") or dataset_name
+
         if use_support:
             from src.data_loader import build_prompt_with_support
 
@@ -171,7 +174,7 @@ def generate_predictions_for_records(
                 support=record.get("support", ""),
             )
         else:
-            prompt = build_prompt_for_short_answer(question)
+            prompt = build_prompt_for_qa(question, dataset_name=record_dataset)
 
         try:
             prediction = llm_client.generate(prompt)
@@ -197,6 +200,7 @@ def generate_predictions_from_file(
     output_path: str,
     llm_client: BaseLLMClient,
     use_support: bool = False,
+    dataset_name: str | None = None,
     sample_size: int | None = None,
 ) -> None:
     """
@@ -213,6 +217,9 @@ def generate_predictions_from_file(
         if "id" not in new_record:
             new_record["id"] = f"sample_{idx}"
 
+        if "dataset" not in new_record and dataset_name is not None:
+            new_record["dataset"] = dataset_name
+
         if "ground_truth" not in new_record and "correct_answer" in new_record:
             new_record["ground_truth"] = new_record["correct_answer"]
 
@@ -228,6 +235,7 @@ def generate_predictions_from_file(
         records=records,
         llm_client=llm_client,
         use_support=use_support,
+        dataset_name=dataset_name,
     )
 
     save_jsonl(output_records, output_path)

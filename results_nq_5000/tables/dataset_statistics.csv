@@ -1,0 +1,2 @@
+dataset,task_type,sample_size,num_records,num_correct_label,num_incorrect_label,correct_rate,avg_prediction_tokens,avg_reference_tokens,empty_predictions,exact_match_count,contains_ground_truth_count,avg_token_f1
+nq,long_form,5000,5000,186,4814,0.0372,11.5892,100.2672,3,0,0,0.13207281965200274
