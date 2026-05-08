@@ -211,4 +211,4 @@ Embedding similarity is useful but insufficient as a final correctness evaluator
 
 ## Reproducibility
 
-Run `python scripts/analyze_part4_strict.py` from the project root. Summary tables are in `part4_strict_analysis/summary_tables/`, figures are in `part4_strict_analysis/figures/`, and sampled manual annotations are in `manual_annotation_sample.csv`.
+Run `python scripts/analyze_part4_strict.py` from the project root. Summary tables are in `failures_analysis_and_improvement/summary_tables/`, figures are in `failures_analysis_and_improvement/figures/`, and sampled manual annotations are in `manual_annotation_sample.csv`.

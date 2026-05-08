@@ -102,4 +102,4 @@ python scripts/04_visualize_results.py
 - Part 1 Prediction and Representation：`scripts/01_generate_predictions.py`、`scripts/02_compute_similarity.py`
 - Part 2 Similarity Analysis：`scripts/03_evaluate.py`、`scripts/04_visualize_results.py`
 - Part 3 Empirical Study：`results*/tables/evaluation_results.csv`、`baseline_ablation_results.csv` 和所有 figures
-- Part 4 Failure Analysis and Improvement：`results*/failure_cases/`、`case_studies.csv`、`part4_failure_analysis/`
+- Part 4 Failure Analysis and Improvement：`results*/failure_cases/`、`case_studies.csv`、`failures_analysis_and_improvement/`

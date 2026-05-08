@@ -11,7 +11,7 @@ from statistics import mean
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "part4_strict_analysis"
+OUT = ROOT / "failures_analysis_and_improvement"
 
 BASELINE = [
     "results_nq_5000",

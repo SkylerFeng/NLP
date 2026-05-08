@@ -210,3 +210,7 @@ Verifier 可以是 NLI model，也可以是 LLM judge，判断 prediction 是否
 ## 结论
 
 Embedding similarity 可以作为 correctness screening signal，但不能作为最终 correctness evaluator。它在 short-form QA 上表现很好，在 long-form reference 上容易因为表示错配而失败，也无法稳定区分语义相关和事实蕴含。NQ reference extraction 显著改善了最大 failure mode。下一步应结合 normalization、hybrid scoring、threshold calibration、verifier-based checking，并把人工标注 failure set 作为校准和评估资源。
+
+## Reproducibility
+
+在项目根目录运行 `python scripts/analyze_part4_strict.py` 可以复现 Part 4 分析。汇总表格保存在 `failures_analysis_and_improvement/summary_tables/`，图片保存在 `failures_analysis_and_improvement/figures/`，抽样人工标注结果保存在 `manual_annotation_sample.csv`。
