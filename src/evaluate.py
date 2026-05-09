@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, Iterable, List
 
 import numpy as np
 from sklearn.metrics import (
@@ -13,6 +13,33 @@ from sklearn.metrics import (
 from src.compute_similarity import threshold_similarity
 
 
+def missing_fields(records: List[Dict], fields: Iterable[str]) -> List[str]:
+    """
+    Return fields that are absent from at least one record.
+    """
+    missing = []
+    for field in fields:
+        if any(field not in record for record in records):
+            missing.append(field)
+    return missing
+
+
+def records_have_fields(records: List[Dict], fields: Iterable[str]) -> bool:
+    """
+    Check whether every record contains every requested field.
+    """
+    return not missing_fields(records, fields)
+
+
+def require_metric_fields(records: List[Dict], fields: Iterable[str]) -> None:
+    missing = missing_fields(records, fields)
+    if missing:
+        raise ValueError(
+            "Cannot evaluate metrics because records are missing fields: "
+            + ", ".join(missing)
+        )
+
+
 def evaluate_similarity_as_classifier(
     records: List[Dict],
     similarity_field: str,
@@ -22,6 +49,8 @@ def evaluate_similarity_as_classifier(
     """
     Evaluate whether similarity can classify predictions as correct / incorrect.
     """
+    require_metric_fields(records, [label_field, similarity_field])
+
     y_true = np.array([record[label_field] for record in records])
     y_score = np.array([record[similarity_field] for record in records])
     y_pred = np.array([threshold_similarity(score, threshold) for score in y_score])
@@ -80,6 +109,8 @@ def summarize_similarity_by_correctness(
     """
     Summarize similarity scores for correct and incorrect predictions.
     """
+    require_metric_fields(records, [label_field, similarity_field])
+
     correct_scores = [
         record[similarity_field]
         for record in records
@@ -123,6 +154,8 @@ def get_failure_cases(
         1. high similarity but incorrect
         2. low similarity but correct
     """
+    require_metric_fields(records, [label_field, similarity_field])
+
     high_similarity_wrong = []
     low_similarity_correct = []
 

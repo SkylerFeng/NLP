@@ -12,6 +12,7 @@ from src.evaluate import (
     evaluate_similarity_as_classifier,
     find_best_threshold,
     get_failure_cases,
+    records_have_fields,
     summarize_similarity_by_correctness,
 )
 from src.reference_answer import resolve_reference_field
@@ -30,6 +31,12 @@ def safe_model_name(model_name: str) -> str:
     return model_name.replace("/", "_").replace("-", "_")
 
 
+def default_reference_field(config: dict) -> str:
+    if config.get("data", {}).get("dataset") == "nq":
+        return "reference_answer"
+    return "ground_truth"
+
+
 def write_csv(path: Path, rows: list[dict]) -> None:
     if not rows:
         return
@@ -42,7 +49,7 @@ def write_csv(path: Path, rows: list[dict]) -> None:
                 fieldnames.append(key)
 
     with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -111,10 +118,12 @@ def add_hybrid_scores(
 
 def metric_row(
     records: list[dict],
+    stage: str,
     method: str,
     family: str,
     score_field: str,
     label_field: str,
+    reference_field: str,
     threshold: float,
 ) -> dict:
     summary = summarize_similarity_by_correctness(
@@ -135,9 +144,12 @@ def metric_row(
     )
 
     return {
+        "stage": stage,
         "method": method,
         "family": family,
+        "label_field": label_field,
         "score_field": score_field,
+        "reference_field": reference_field,
         "num_correct": summary["num_correct"],
         "num_incorrect": summary["num_incorrect"],
         "correct_mean": summary["correct_mean"],
@@ -158,27 +170,108 @@ def metric_row(
     }
 
 
-def build_baseline_ablation_rows(records: list[dict], config: dict) -> list[dict]:
+def build_metric_row_if_available(
+    records: list[dict],
+    *,
+    stage: str,
+    method: str,
+    family: str,
+    score_field: str,
+    label_field: str,
+    reference_field: str,
+    threshold: float,
+) -> dict | None:
+    if not records_have_fields(records, [label_field, score_field, reference_field]):
+        return None
+
+    return metric_row(
+        records=records,
+        stage=stage,
+        method=method,
+        family=family,
+        score_field=score_field,
+        label_field=label_field,
+        reference_field=reference_field,
+        threshold=threshold,
+    )
+
+
+def configured_ablation_rows(
+    records: list[dict],
+    config: dict,
+    default_label_field: str,
+    default_reference_field: str,
+) -> list[dict]:
+    rows = []
+    for spec in config.get("evaluation", {}).get("ablation_scores", []):
+        score_field = spec["score_field"]
+        row = build_metric_row_if_available(
+            records,
+            stage=spec.get("stage", "configured"),
+            method=spec.get("method", score_field),
+            family=spec.get("family", "configured_ablation"),
+            score_field=score_field,
+            label_field=spec.get("label_field", default_label_field),
+            reference_field=spec.get("reference_field", default_reference_field),
+            threshold=float(
+                spec.get(
+                    "threshold",
+                    config["evaluation"].get("similarity_threshold", 0.75),
+                )
+            ),
+        )
+        if row is not None:
+            rows.append(row)
+    return rows
+
+
+def build_baseline_ablation_rows(
+    records: list[dict],
+    config: dict,
+    reference_field: str,
+) -> list[dict]:
     label_field = config["evaluation"].get("label_field", "correct_label")
     similarity_threshold = config["evaluation"].get("similarity_threshold", 0.75)
 
     rows = [
-        metric_row(records, "Exact match", "lexical_baseline", "exact_match", label_field, 0.5),
         metric_row(
             records,
+            "baseline",
+            "Exact match",
+            "lexical_baseline",
+            "exact_match",
+            label_field,
+            reference_field,
+            0.5,
+        ),
+        metric_row(
+            records,
+            "baseline",
             "Ground-truth containment",
             "lexical_baseline",
             "contains_ground_truth",
             label_field,
+            reference_field,
             0.5,
         ),
-        metric_row(records, "Token F1", "lexical_baseline", "token_f1", label_field, 0.8),
         metric_row(
             records,
+            "baseline",
+            "Token F1",
+            "lexical_baseline",
+            "token_f1",
+            label_field,
+            reference_field,
+            0.8,
+        ),
+        metric_row(
+            records,
+            "baseline",
             "Entity/token overlap",
             "structured_baseline",
             "entity_overlap",
             label_field,
+            reference_field,
             0.75,
         ),
     ]
@@ -188,24 +281,75 @@ def build_baseline_ablation_rows(records: list[dict], config: dict) -> list[dict
         rows.append(
             metric_row(
                 records,
+                "baseline",
                 f"Embedding cosine: {model_name}",
                 "embedding",
                 f"similarity_{model_key}",
                 label_field,
+                reference_field,
                 similarity_threshold,
             )
         )
         rows.append(
             metric_row(
                 records,
+                "baseline",
                 f"Hybrid 0.7*embedding+0.3*overlap: {model_name}",
                 "hybrid_ablation",
                 f"hybrid_{model_key}",
                 label_field,
+                reference_field,
                 similarity_threshold,
             )
         )
 
+    rows.extend(configured_ablation_rows(records, config, label_field, reference_field))
+    return rows
+
+
+def build_label_change_audit_rows(
+    records: list[dict],
+    config: dict,
+    reference_field: str,
+) -> list[dict]:
+    evaluation_config = config.get("evaluation", {})
+    baseline_label_field = evaluation_config.get("baseline_label_field", "correct_label")
+    candidate_label_field = evaluation_config.get("candidate_label_field", "correct_label_v2")
+    baseline_reference_field = evaluation_config.get(
+        "baseline_reference_field",
+        default_reference_field(config),
+    )
+    candidate_reference_field = evaluation_config.get(
+        "candidate_reference_field",
+        "reference_answer_v2",
+    )
+
+    if not records_have_fields(records, [baseline_label_field, candidate_label_field]):
+        return []
+
+    rows = []
+    for record in records:
+        baseline_label = int(record.get(baseline_label_field, 0))
+        candidate_label = int(record.get(candidate_label_field, 0))
+        rows.append(
+            {
+                "dataset": config["data"]["dataset"],
+                "id": record.get("id", ""),
+                "baseline_label_field": baseline_label_field,
+                "candidate_label_field": candidate_label_field,
+                "baseline_label": baseline_label,
+                "candidate_label": candidate_label,
+                "label_changed": int(baseline_label != candidate_label),
+                "evaluation_reference_field": reference_field,
+                "baseline_reference_field": baseline_reference_field,
+                "candidate_reference_field": candidate_reference_field,
+                "baseline_reference": record.get(baseline_reference_field, ""),
+                "candidate_reference": record.get(candidate_reference_field, ""),
+                "question": record.get("question", ""),
+                "prediction": record.get("prediction", ""),
+                "ground_truth": record.get("ground_truth", ""),
+            }
+        )
     return rows
 
 
@@ -270,6 +414,9 @@ def build_case_studies(
                         "task_type": dataset_task_type(config["data"]["dataset"]),
                         "model": model_name,
                         "failure_kind": failure_kind,
+                        "label_field": label_field,
+                        "score_field": similarity_field,
+                        "reference_field": reference_field,
                         "id": record.get("id", ""),
                         "question": record.get("question", ""),
                         "ground_truth": record.get("ground_truth", ""),
@@ -290,8 +437,14 @@ def build_case_studies(
     return rows
 
 
+def config_path_from_args() -> str:
+    if len(sys.argv) > 1:
+        return sys.argv[1]
+    return "config.yaml"
+
+
 def main() -> None:
-    config = load_config("config.yaml")
+    config = load_config(config_path_from_args())
 
     input_file = config["evaluation"]["input_file"]
     threshold = config["evaluation"].get("similarity_threshold", 0.75)
@@ -343,8 +496,12 @@ def main() -> None:
         )
 
         result = {
+            "method": "Embedding cosine",
             "embedding_model": model_name,
+            "label_field": label_field,
+            "score_field": similarity_field,
             "similarity_field": similarity_field,
+            "reference_field": reference_field,
 
             "num_correct": summary["num_correct"],
             "num_incorrect": summary["num_incorrect"],
@@ -399,13 +556,32 @@ def main() -> None:
     print(f"Saving evaluation table to: {output_csv}")
 
     with output_csv.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(all_results[0].keys()))
+        writer = csv.DictWriter(
+            f,
+            fieldnames=list(all_results[0].keys()),
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(all_results)
 
-    write_csv(table_dir / "dataset_statistics.csv", dataset_statistics(records, config, reference_field))
-    write_csv(table_dir / "baseline_ablation_results.csv", build_baseline_ablation_rows(records, config))
-    write_csv(table_dir / "case_studies.csv", build_case_studies(records, config, reference_field))
+    write_csv(
+        table_dir / "dataset_statistics.csv",
+        dataset_statistics(records, config, reference_field),
+    )
+    write_csv(
+        table_dir / "baseline_ablation_results.csv",
+        build_baseline_ablation_rows(records, config, reference_field),
+    )
+    write_csv(
+        table_dir / "case_studies.csv",
+        build_case_studies(records, config, reference_field),
+    )
+    label_change_audit_path = table_dir / "label_change_audit.csv"
+    label_change_audit_rows = build_label_change_audit_rows(records, config, reference_field)
+    if label_change_audit_rows:
+        write_csv(label_change_audit_path, label_change_audit_rows)
+    elif label_change_audit_path.exists():
+        label_change_audit_path.unlink()
 
     metadata = {
         "dataset": config["data"]["dataset"],
@@ -420,6 +596,7 @@ def main() -> None:
         "llm_provider": config["llm"].get("provider"),
         "llm_model": config["llm"].get("model"),
         "embedding_models": config["embedding"]["models"],
+        "label_field": label_field,
         "evaluation_reference_field": reference_field,
     }
     metadata_path = table_dir / "run_metadata.json"
