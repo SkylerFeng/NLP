@@ -1,6 +1,7 @@
 import re
 from typing import Dict, List, Set
 
+from src.factual_units import factual_conflict_adjusted_score
 from src.utils import normalize_text
 
 
@@ -136,3 +137,31 @@ def hybrid_similarity_score(
     final_score = alpha * embedding_similarity + (1 - alpha) * entity_score
     """
     return alpha * embedding_similarity + (1 - alpha) * entity_score
+
+
+def add_factual_conflict_adjusted_scores(
+    records: List[Dict],
+    score_field_pairs: List[tuple[str, str]],
+    penalty_field: str = "factual_conflict_penalty",
+    penalty_weight: float = 0.25,
+) -> List[Dict]:
+    """
+    Add score fields with the Unit 4 factual-conflict penalty applied.
+
+    score_field_pairs contains (input_field, output_field) tuples. Missing
+    input fields are skipped so older similarity files remain evaluable.
+    """
+    output_records = []
+    for record in records:
+        new_record = dict(record)
+        penalty = float(record.get(penalty_field, 0.0))
+        for input_field, output_field in score_field_pairs:
+            if input_field not in record:
+                continue
+            new_record[output_field] = factual_conflict_adjusted_score(
+                score=float(record[input_field]),
+                penalty=penalty,
+                penalty_weight=penalty_weight,
+            )
+        output_records.append(new_record)
+    return output_records

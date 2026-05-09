@@ -239,6 +239,47 @@ class EvaluationHarnessTest(unittest.TestCase):
             {"reference_answer_v2"},
         )
 
+    def test_factual_unit4_rows_are_added_when_scores_exist(self):
+        records = [
+            {
+                **record,
+                "reference_answer_v2": record["reference_answer"],
+                "factual_unit_score": score,
+                f"factual_conflict_adjusted_similarity_{MODEL_KEY}": score,
+                f"factual_conflict_adjusted_prediction_span_blend_similarity_{MODEL_KEY}": score,
+                f"factual_conflict_adjusted_span_max_similarity_{MODEL_KEY}": score,
+                f"factual_conflict_adjusted_multi_view_score_{MODEL_KEY}": score,
+            }
+            for record, score in zip(base_records(), [0.95, 0.1])
+        ]
+
+        rows = evaluate_script.build_baseline_ablation_rows(
+            records,
+            base_config(),
+            "reference_answer",
+        )
+        unit4_rows = [row for row in rows if row["stage"] == "unit4"]
+
+        self.assertEqual(len(unit4_rows), 5)
+        self.assertEqual(
+            {
+                row["score_field"]
+                for row in unit4_rows
+            },
+            {
+                "factual_unit_score",
+                f"factual_conflict_adjusted_similarity_{MODEL_KEY}",
+                f"factual_conflict_adjusted_prediction_span_blend_similarity_{MODEL_KEY}",
+                f"factual_conflict_adjusted_span_max_similarity_{MODEL_KEY}",
+                f"factual_conflict_adjusted_multi_view_score_{MODEL_KEY}",
+            },
+        )
+        self.assertEqual(
+            {row["reference_field"] for row in unit4_rows},
+            {"reference_answer_v2"},
+        )
+        self.assertIn("high_similarity_wrong", unit4_rows[0])
+
     def test_label_change_audit_rows_are_written_when_v2_label_exists(self):
         records = [
             {**record, "correct_label_v2": record["correct_label"]}

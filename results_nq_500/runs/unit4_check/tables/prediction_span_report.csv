@@ -1,0 +1,17 @@
+metric,source,value
+num_records,all,500
+empty_prediction_span_count,all,0
+fallback_count,all,275
+source_count,definition_predicate,13
+source_count,list_coordinated_items,1
+source_count,number_quantity,22
+source_count,prediction_fallback,179
+source_count,uncertain_prediction_fallback,1
+source_count,when_date,69
+source_count,where_entity_fallback,23
+source_count,where_prepositional_phrase,37
+source_count,who_by_phrase,19
+source_count,who_copular_phrase,3
+source_count,who_entity_fallback,72
+source_count,who_verb_subject,48
+source_count,yes_no_polarity,13

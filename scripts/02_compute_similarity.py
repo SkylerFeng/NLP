@@ -12,6 +12,8 @@ from src.compute_similarity import (
     add_similarity_scores,
 )
 from src.correctness_labeling import label_correctness_for_records
+from src.entity_overlap import add_factual_conflict_adjusted_scores
+from src.factual_units import add_factual_unit_features
 from src.multi_view_similarity import add_span_level_similarity_scores
 from src.reference_answer import prepare_reference_answers, resolve_reference_field
 from src.utils import (
@@ -112,6 +114,21 @@ def main() -> None:
     records = prepare_reference_answers(records, config["data"]["dataset"])
     print("Extracting prediction answer spans.")
     records = add_prediction_answer_spans(records)
+    factual_reference_field = (
+        "reference_answer_v2"
+        if config["data"]["dataset"] == "nq"
+        and all("reference_answer_v2" in record for record in records)
+        else reference_field
+    )
+    print(
+        "Extracting factual units with "
+        f"reference field: {factual_reference_field}"
+    )
+    records = add_factual_unit_features(
+        records,
+        reference_field=factual_reference_field,
+        prediction_field="prediction_answer_span",
+    )
 
     print(f"Labeling correctness with reference field: {label_reference_field}")
     records = label_correctness_for_records(
@@ -185,6 +202,27 @@ def main() -> None:
                 batch_size=batch_size,
                 reference_field="reference_answer_v2",
                 sentence_similarity_field=f"similarity_v2_{model_key}",
+            )
+            records = add_factual_conflict_adjusted_scores(
+                records,
+                score_field_pairs=[
+                    (
+                        f"similarity_v2_{model_key}",
+                        f"factual_conflict_adjusted_similarity_{model_key}",
+                    ),
+                    (
+                        f"prediction_span_blend_similarity_{model_key}",
+                        f"factual_conflict_adjusted_prediction_span_blend_similarity_{model_key}",
+                    ),
+                    (
+                        f"span_max_similarity_{model_key}",
+                        f"factual_conflict_adjusted_span_max_similarity_{model_key}",
+                    ),
+                    (
+                        f"multi_view_score_{model_key}",
+                        f"factual_conflict_adjusted_multi_view_score_{model_key}",
+                    ),
+                ],
             )
 
     print(f"Saving similarity results to: {output_file}")

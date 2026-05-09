@@ -1,0 +1,11 @@
+metric,group,value
+num_records,all,500
+number_conflict_count,all,27
+date_conflict_count,all,57
+entity_conflict_count,all,294
+any_conflict_count,all,390
+specificity_flag_count,conflict,370
+specificity_flag_count,matched_or_neutral,65
+specificity_flag_count,over_specific_prediction,4
+specificity_flag_count,partial_overlap,34
+specificity_flag_count,under_specific_prediction,27

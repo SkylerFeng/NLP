@@ -17,6 +17,7 @@ from src.evaluate import (
     records_have_fields,
     summarize_similarity_by_correctness,
 )
+from src.factual_units import build_factual_unit_report
 from src.reference_answer import build_reference_quality_report, resolve_reference_field
 from src.utils import (
     dataset_task_type,
@@ -144,6 +145,13 @@ def metric_row(
         similarity_field=score_field,
         label_field=label_field,
     )
+    failure_cases = get_failure_cases(
+        records=records,
+        similarity_field=score_field,
+        label_field=label_field,
+        high_threshold=0.8,
+        low_threshold=0.5,
+    )
 
     return {
         "stage": stage,
@@ -169,6 +177,8 @@ def metric_row(
         "best_precision": best_metrics["precision"],
         "best_recall": best_metrics["recall"],
         "best_f1": best_metrics["f1"],
+        "high_similarity_wrong": len(failure_cases["high_similarity_wrong"]),
+        "low_similarity_correct": len(failure_cases["low_similarity_correct"]),
     }
 
 
@@ -312,6 +322,64 @@ def span_similarity_ablation_rows(
     return rows
 
 
+def factual_unit_ablation_rows(
+    records: list[dict],
+    config: dict,
+    label_field: str,
+) -> list[dict]:
+    rows = []
+    similarity_threshold = config["evaluation"].get("similarity_threshold", 0.75)
+
+    row = build_metric_row_if_available(
+        records,
+        stage="unit4",
+        method="Factual unit alignment score",
+        family="factual_unit_features",
+        score_field="factual_unit_score",
+        label_field=label_field,
+        reference_field="reference_answer_v2",
+        threshold=similarity_threshold,
+    )
+    if row is not None:
+        rows.append(row)
+
+    score_specs = [
+        (
+            "factual_conflict_adjusted_similarity",
+            "Factual conflict penalty on v2 embedding",
+        ),
+        (
+            "factual_conflict_adjusted_prediction_span_blend_similarity",
+            "Factual conflict penalty on prediction-span blend",
+        ),
+        (
+            "factual_conflict_adjusted_span_max_similarity",
+            "Factual conflict penalty on span max similarity",
+        ),
+        (
+            "factual_conflict_adjusted_multi_view_score",
+            "Factual conflict penalty on multi-view score",
+        ),
+    ]
+    for model_name in config["embedding"]["models"]:
+        model_key = safe_model_name(model_name)
+        for field_prefix, method_prefix in score_specs:
+            score_field = f"{field_prefix}_{model_key}"
+            row = build_metric_row_if_available(
+                records,
+                stage="unit4",
+                method=f"{method_prefix}: {model_name}",
+                family="factual_conflict_penalty",
+                score_field=score_field,
+                label_field=label_field,
+                reference_field="reference_answer_v2",
+                threshold=similarity_threshold,
+            )
+            if row is not None:
+                rows.append(row)
+    return rows
+
+
 def build_baseline_ablation_rows(
     records: list[dict],
     config: dict,
@@ -393,6 +461,7 @@ def build_baseline_ablation_rows(
     rows.extend(reference_validation_ablation_rows(records, config, label_field))
     rows.extend(prediction_span_ablation_rows(records, config, label_field))
     rows.extend(span_similarity_ablation_rows(records, config, label_field))
+    rows.extend(factual_unit_ablation_rows(records, config, label_field))
     rows.extend(configured_ablation_rows(records, config, label_field, reference_field))
     return rows
 
@@ -518,6 +587,15 @@ def build_case_studies(
                         "token_f1": record.get("token_f1", ""),
                         "contains_ground_truth": record.get("contains_ground_truth", ""),
                         "entity_overlap": record.get("entity_overlap", ""),
+                        "number_conflict": record.get("number_conflict", ""),
+                        "date_conflict": record.get("date_conflict", ""),
+                        "entity_conflict": record.get("entity_conflict", ""),
+                        "list_item_f1": record.get("list_item_f1", ""),
+                        "specificity_flag": record.get("specificity_flag", ""),
+                        "factual_conflict_penalty": record.get(
+                            "factual_conflict_penalty",
+                            "",
+                        ),
                         "similarity": score,
                         "distance": 1.0 - score,
                         "explanation_hint": case_hint(record, failure_kind),
@@ -679,6 +757,13 @@ def main() -> None:
         write_csv(prediction_span_report_path, prediction_span_rows)
     elif prediction_span_report_path.exists():
         prediction_span_report_path.unlink()
+
+    factual_unit_report_path = table_dir / "factual_unit_report.csv"
+    factual_unit_rows = build_factual_unit_report(records)
+    if factual_unit_rows:
+        write_csv(factual_unit_report_path, factual_unit_rows)
+    elif factual_unit_report_path.exists():
+        factual_unit_report_path.unlink()
 
     label_change_audit_path = table_dir / "label_change_audit.csv"
     label_change_audit_rows = build_label_change_audit_rows(records, config, reference_field)
