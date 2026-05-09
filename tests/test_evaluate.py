@@ -173,6 +173,34 @@ class EvaluationHarnessTest(unittest.TestCase):
         self.assertEqual(row["label_field"], "correct_label")
         self.assertEqual(row["reference_field"], "reference_answer_v2")
 
+    def test_prediction_span_unit2_row_is_added_when_scores_exist(self):
+        records = [
+            {
+                **record,
+                "reference_answer_v2": record["reference_answer"],
+                f"prediction_span_blend_similarity_{MODEL_KEY}": score,
+            }
+            for record, score in zip(base_records(), [0.95, 0.1])
+        ]
+
+        rows = evaluate_script.build_baseline_ablation_rows(
+            records,
+            base_config(),
+            "reference_answer",
+        )
+        row = next(row for row in rows if row["stage"] == "unit2")
+
+        self.assertEqual(
+            row["method"],
+            f"Reference validation + 0.5 span blend: {MODEL_NAME}",
+        )
+        self.assertEqual(
+            row["score_field"],
+            f"prediction_span_blend_similarity_{MODEL_KEY}",
+        )
+        self.assertEqual(row["label_field"], "correct_label")
+        self.assertEqual(row["reference_field"], "reference_answer_v2")
+
     def test_label_change_audit_rows_are_written_when_v2_label_exists(self):
         records = [
             {**record, "correct_label_v2": record["correct_label"]}

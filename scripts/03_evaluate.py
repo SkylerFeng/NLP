@@ -7,6 +7,8 @@ from statistics import mean
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
 
+from src.answer_span import build_prediction_span_report
+from src.compute_similarity import DEFAULT_SPAN_BLEND_WEIGHT
 from src.entity_overlap import add_entity_overlap_scores, hybrid_similarity_score
 from src.evaluate import (
     evaluate_similarity_as_classifier,
@@ -250,6 +252,34 @@ def reference_validation_ablation_rows(
     return rows
 
 
+def prediction_span_ablation_rows(
+    records: list[dict],
+    config: dict,
+    label_field: str,
+) -> list[dict]:
+    rows = []
+    similarity_threshold = config["evaluation"].get("similarity_threshold", 0.75)
+    for model_name in config["embedding"]["models"]:
+        model_key = safe_model_name(model_name)
+        score_field = f"prediction_span_blend_similarity_{model_key}"
+        row = build_metric_row_if_available(
+            records,
+            stage="unit2",
+            method=(
+                f"Reference validation + {DEFAULT_SPAN_BLEND_WEIGHT:.1f} span blend: "
+                f"{model_name}"
+            ),
+            family="prediction_span_ablation",
+            score_field=score_field,
+            label_field=label_field,
+            reference_field="reference_answer_v2",
+            threshold=similarity_threshold,
+        )
+        if row is not None:
+            rows.append(row)
+    return rows
+
+
 def build_baseline_ablation_rows(
     records: list[dict],
     config: dict,
@@ -329,6 +359,7 @@ def build_baseline_ablation_rows(
         )
 
     rows.extend(reference_validation_ablation_rows(records, config, label_field))
+    rows.extend(prediction_span_ablation_rows(records, config, label_field))
     rows.extend(configured_ablation_rows(records, config, label_field, reference_field))
     return rows
 
@@ -608,6 +639,13 @@ def main() -> None:
         write_csv(reference_quality_report_path, reference_quality_rows)
     elif reference_quality_report_path.exists():
         reference_quality_report_path.unlink()
+
+    prediction_span_report_path = table_dir / "prediction_span_report.csv"
+    prediction_span_rows = build_prediction_span_report(records)
+    if prediction_span_rows:
+        write_csv(prediction_span_report_path, prediction_span_rows)
+    elif prediction_span_report_path.exists():
+        prediction_span_report_path.unlink()
 
     label_change_audit_path = table_dir / "label_change_audit.csv"
     label_change_audit_rows = build_label_change_audit_rows(records, config, reference_field)

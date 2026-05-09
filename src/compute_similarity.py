@@ -5,6 +5,9 @@ import numpy as np
 from src.compute_embeddings import BaseEmbeddingModel, compute_text_embeddings
 
 
+DEFAULT_SPAN_BLEND_WEIGHT = 0.5
+
+
 def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
     """
     Compute cosine similarity between two vectors.
@@ -82,6 +85,45 @@ def add_similarity_scores(
         new_record[similarity_field] = similarity
         output_records.append(new_record)
 
+    return output_records
+
+
+def add_blended_similarity_scores(
+    records: List[Dict],
+    base_score_field: str,
+    span_score_field: str,
+    output_field: str,
+    span_weight: float = DEFAULT_SPAN_BLEND_WEIGHT,
+) -> List[Dict]:
+    """
+    Add a conservative Unit 2 score that blends full-prediction and span views.
+
+    The raw answer-span cosine is useful for ranking, but it can over-credit
+    same-type wrong dates or numbers. The blended field keeps the answer-focus
+    signal while retaining sentence-level context as a guardrail.
+    """
+    if not 0.0 <= span_weight <= 1.0:
+        raise ValueError("span_weight must be between 0.0 and 1.0.")
+
+    base_weight = 1.0 - span_weight
+    output_records = []
+    for record in records:
+        missing = [
+            field
+            for field in (base_score_field, span_score_field)
+            if field not in record
+        ]
+        if missing:
+            raise ValueError(
+                "Cannot blend similarity scores because record is missing fields: "
+                + ", ".join(missing)
+            )
+
+        new_record = dict(record)
+        base_score = float(record[base_score_field])
+        span_score = float(record[span_score_field])
+        new_record[output_field] = base_weight * base_score + span_weight * span_score
+        output_records.append(new_record)
     return output_records
 
 

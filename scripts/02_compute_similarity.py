@@ -4,8 +4,13 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
 
+from src.answer_span import add_prediction_answer_spans
 from src.compute_embeddings import create_embedding_model
-from src.compute_similarity import add_similarity_scores
+from src.compute_similarity import (
+    DEFAULT_SPAN_BLEND_WEIGHT,
+    add_blended_similarity_scores,
+    add_similarity_scores,
+)
 from src.correctness_labeling import label_correctness_for_records
 from src.reference_answer import prepare_reference_answers, resolve_reference_field
 from src.utils import (
@@ -26,6 +31,10 @@ CORRECTNESS_FIELDS = (
     "contains_prediction_in_reference",
     "correct_label",
 )
+
+
+def safe_model_name(model_name: str) -> str:
+    return model_name.replace("/", "_").replace("-", "_")
 
 
 def default_reference_field(config: dict) -> str:
@@ -100,6 +109,8 @@ def main() -> None:
     label_reference_field = resolve_label_reference_field(config, reference_field)
     print(f"Preparing evaluation references with field: {reference_field}")
     records = prepare_reference_answers(records, config["data"]["dataset"])
+    print("Extracting prediction answer spans.")
+    records = add_prediction_answer_spans(records)
 
     print(f"Labeling correctness with reference field: {label_reference_field}")
     records = label_correctness_for_records(
@@ -146,6 +157,24 @@ def main() -> None:
                 prediction_field="prediction",
                 reference_field="reference_answer_v2",
                 output_field_prefix="similarity_v2",
+            )
+            print(f"Computing prediction span similarity with embedding model: {model_name}")
+            records = add_similarity_scores(
+                records=records,
+                embedding_model=embedding_model,
+                embedding_model_name=model_name,
+                batch_size=batch_size,
+                prediction_field="prediction_answer_span",
+                reference_field="reference_answer_v2",
+                output_field_prefix="prediction_span_similarity",
+            )
+            model_key = safe_model_name(model_name)
+            records = add_blended_similarity_scores(
+                records=records,
+                base_score_field=f"similarity_v2_{model_key}",
+                span_score_field=f"prediction_span_similarity_{model_key}",
+                output_field=f"prediction_span_blend_similarity_{model_key}",
+                span_weight=DEFAULT_SPAN_BLEND_WEIGHT,
             )
 
     print(f"Saving similarity results to: {output_file}")
