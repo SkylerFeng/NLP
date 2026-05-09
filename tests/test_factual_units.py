@@ -44,6 +44,66 @@ class FactualUnitsTest(unittest.TestCase):
         self.assertEqual(result["entity_match"], 1)
         self.assertEqual(result["entity_conflict"], 0)
 
+    def test_repeated_entity_token_alias_does_not_conflict(self):
+        result = compare_factual_units("Emma Stone Stone", "Emma Stone")
+
+        self.assertEqual(result["entity_match"], 1)
+        self.assertEqual(result["entity_conflict"], 0)
+
+    def test_entity_substring_alias_does_not_conflict_for_multiword_entities(self):
+        result = compare_factual_units(
+            "The United States of America joined later.",
+            "The United States joined later.",
+        )
+
+        self.assertEqual(result["entity_match"], 1)
+        self.assertEqual(result["entity_conflict"], 0)
+
+    def test_date_containment_is_partial_overlap_not_conflict(self):
+        cases = [
+            ("The war lasted from 1775-1783.", "It ended in 1783."),
+            ("The invasion began on 19 September 2017.", "It began in 2017."),
+            ("The war lasted 1955 to 1975.", "It began in 1955."),
+            ("EBT has been implemented since June 2004.", "It started in 2004."),
+        ]
+
+        for reference, prediction in cases:
+            with self.subTest(reference=reference, prediction=prediction):
+                result = compare_factual_units(reference, prediction)
+
+                self.assertEqual(result["date_match"], 1)
+                self.assertEqual(result["date_conflict"], 0)
+                self.assertEqual(result["partial_factual_overlap"], 1)
+
+    def test_specific_date_mismatch_still_conflicts(self):
+        cases = [
+            ("It happened in June 2004.", "It happened in July 2004."),
+            ("It happened on 19 September 2017.", "It happened on 20 September 2017."),
+            ("The war lasted from 1775-1783.", "The war lasted from 1780-1784."),
+        ]
+
+        for reference, prediction in cases:
+            with self.subTest(reference=reference, prediction=prediction):
+                result = compare_factual_units(reference, prediction)
+
+                self.assertEqual(result["date_match"], 0)
+                self.assertEqual(result["date_conflict"], 1)
+
+    def test_ordinal_numbers_extract_as_numbers(self):
+        numbers = extract_numbers("She finished first and came 2nd in 2017.")
+
+        self.assertIn("first", numbers)
+        self.assertIn("2nd", numbers)
+
+    def test_sentence_initial_false_entities_are_filtered(self):
+        entities = extract_entity_like_spans(
+            "However, Sound and You are not the answer. The answer is Emma Stone."
+        )
+
+        self.assertNotIn("However", entities)
+        self.assertNotIn("Sound and You", entities)
+        self.assertIn("Emma Stone", entities)
+
     def test_list_item_number_conflict_is_visible(self):
         result = compare_factual_units(
             "The Little League World Series consists of 16 teams, 8 from the United States and 8 international teams.",

@@ -2,7 +2,7 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-from src.evaluate import evaluate_similarity_as_classifier
+from src.evaluate import evaluate_similarity_as_classifier, multi_view_hybrid_score
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -279,6 +279,99 @@ class EvaluationHarnessTest(unittest.TestCase):
             {"reference_answer_v2"},
         )
         self.assertIn("high_similarity_wrong", unit4_rows[0])
+
+    def test_multi_view_hybrid_score_penalizes_same_topic_number_conflict(self):
+        clean_score = multi_view_hybrid_score(
+            sentence_similarity=0.90,
+            span_max_similarity=0.88,
+            entity_or_token_overlap=0.80,
+            factual_conflict_penalty=0.0,
+        )
+        conflict_score = multi_view_hybrid_score(
+            sentence_similarity=0.90,
+            span_max_similarity=0.88,
+            entity_or_token_overlap=0.80,
+            factual_conflict_penalty=1.0,
+        )
+
+        self.assertAlmostEqual(clean_score - conflict_score, 0.25)
+        self.assertLess(conflict_score, clean_score)
+
+    def test_multi_view_hybrid_score_rewards_short_answer_span_alignment(self):
+        sentence_only_score = multi_view_hybrid_score(
+            sentence_similarity=0.40,
+            span_max_similarity=0.40,
+            entity_or_token_overlap=0.0,
+            factual_conflict_penalty=0.0,
+        )
+        span_aligned_score = multi_view_hybrid_score(
+            sentence_similarity=0.40,
+            span_max_similarity=0.95,
+            entity_or_token_overlap=0.0,
+            factual_conflict_penalty=0.0,
+        )
+
+        self.assertGreater(span_aligned_score, sentence_only_score)
+
+    def test_multi_view_hybrid_score_clamps_and_ignores_missing_optional_values(self):
+        self.assertEqual(
+            multi_view_hybrid_score(
+                sentence_similarity=0.05,
+                span_max_similarity=None,
+                entity_or_token_overlap=float("nan"),
+                factual_conflict_penalty=1.0,
+            ),
+            0.0,
+        )
+        self.assertEqual(
+            multi_view_hybrid_score(
+                sentence_similarity=1.2,
+                span_max_similarity=None,
+                entity_or_token_overlap=None,
+                factual_conflict_penalty=0.0,
+            ),
+            1.0,
+        )
+
+    def test_multi_view_hybrid_unit6_rows_are_added_when_scores_exist(self):
+        records = []
+        for record, score in zip(base_records(), [0.95, 0.1]):
+            enriched = {
+                **record,
+                "reference_answer_v2": record["reference_answer"],
+                f"similarity_v2_{MODEL_KEY}": score,
+                f"span_max_similarity_{MODEL_KEY}": score,
+                "factual_conflict_penalty": 0.0,
+            }
+            records.append(enriched)
+        records = evaluate_script.add_multi_view_hybrid_scores(records, [MODEL_NAME])
+
+        self.assertIn("unit6_entity_or_token_overlap", records[0])
+        rows = evaluate_script.build_baseline_ablation_rows(
+            records,
+            base_config(),
+            "reference_answer",
+        )
+        unit6_rows = [row for row in rows if row["stage"] == "unit6"]
+
+        self.assertEqual(len(unit6_rows), 5)
+        self.assertEqual(
+            {
+                row["score_field"]
+                for row in unit6_rows
+            },
+            {
+                f"unit6_fixed_multi_view_hybrid_score_{MODEL_KEY}",
+                f"unit6_span_precision_multi_view_hybrid_score_{MODEL_KEY}",
+                f"unit6_span_guarded_multi_view_hybrid_score_{MODEL_KEY}",
+                f"unit6_span_ranked_multi_view_hybrid_score_{MODEL_KEY}",
+                f"unit6_semantic_recall_multi_view_hybrid_score_{MODEL_KEY}",
+            },
+        )
+        self.assertEqual(
+            {row["family"] for row in unit6_rows},
+            {"multi_view_hybrid_scoring"},
+        )
 
     def test_label_change_audit_rows_are_written_when_v2_label_exists(self):
         records = [

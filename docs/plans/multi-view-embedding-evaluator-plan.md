@@ -364,6 +364,21 @@ Experiment gate:
 - Add ablation rows for `factual_unit_features` and `factual_conflict_penalty`.
 - Keep the improvement if BGE `high_similarity_wrong` decreases without collapsing recall or best F1.
 
+Implementation note, 2026-05-09:
+
+- Unit 4 is implemented in run `results_nq_500/runs/unit4_check`.
+- BGE `factual_conflict_adjusted_multi_view_score` improved PR-AUC from `0.4928` to `0.5657`, best F1 from `0.5000` to `0.5682`, and reduced high-similarity-wrong from `29` to `14` compared with the Unit 3 conservative multi-view score.
+- BGE `factual_conflict_adjusted_span_max_similarity` improved fixed-threshold F1 from `0.4503` to `0.5419` and reduced high-similarity-wrong from `56` to `25` compared with Unit 3 span-max, while keeping PR-AUC roughly stable/improved from `0.8117` to `0.8181`.
+
+Unit 4 rule repairs to consider before or during Unit 6:
+
+- Normalize duplicated entity aliases such as `Emma Stone Stone` before entity conflict comparison.
+- Treat obvious alias/substring matches as non-conflicts when one entity is a clean contraction of the other, for example `Emma Stone Stone` versus `Emma Stone`.
+- Improve date granularity logic so acceptable containment cases such as `1775-1783` versus `1783`, `19 September 2017` versus `2017`, and `1955 to 1975` versus `1955` are flagged as partial date overlap rather than blunt conflict when the question asks for a broad period.
+- Add ordinal and word-number coverage for `first`, `second`, `third`, etc. where they act as factual units.
+- Filter sentence-initial discourse words and false entity spans such as `However`, `Sound`, `You`, `The`, and malformed fragments from entity extraction.
+- Add a separate `partial_factual_overlap` or reason field so Unit 6 can distinguish strict contradiction from acceptable under/over-specificity.
+
 ### Unit 5: Entity/Number-Aware Embedding View
 
 Files:
@@ -409,6 +424,13 @@ Experiment gate:
 
 - Build Unit 5 only if Unit 3 + Unit 4 still leave enough high-similarity wrong cases to justify the extra embedding pass.
 - Keep the improvement only if it improves PR-AUC or reduces `high_similarity_wrong` beyond conflict flags alone.
+
+Gate decision, 2026-05-09:
+
+- Gate status: failed / deferred. Do not implement Unit 5 before Unit 6 unless new evidence appears.
+- After Unit 4, BGE adjusted multi-view leaves only `14` high-similarity-wrong cases at the fixed high threshold. Among those, only `2` retain entity conflicts and none retain number/date conflicts, so the remaining failures are not primarily unresolved symbolic factual-unit mismatches.
+- The residual cases are dominated by automatic-label strictness, reference extraction artifacts, or entailment/specificity ambiguity: examples include `Nigeria` / `United Nations`, `JAR` definition paraphrases, `Emma Stone Stone` alias cleanup, and date-surface variants such as `22 July 1947` versus `July 22, 1947`.
+- A new factual-unit embedding pass is likely to raise scores for close paraphrases and alias cases that are already high, while adding compute and ablation complexity. The better next step is Unit 6 with the reduced score path that omits `factual_view_similarity`, plus the Unit 4 rule repairs listed above.
 
 ### Unit 6: Multi-View Hybrid Scoring
 
@@ -463,6 +485,15 @@ Experiment gate:
 - Add `multi_view_ablation_results.csv`.
 - Compare fixed-weight, reduced-score, and sensitivity-analysis rows.
 - Keep the combined score only if it improves over the best single-feature ablation and over the existing BGE hybrid baseline.
+
+Implementation note, 2026-05-09:
+
+- Unit 6 is implemented in run `results_nq_500/runs/unit6_check`.
+- Unit 5 remains skipped, so Unit 6 uses reduced positive weights over sentence similarity, span max similarity, and entity/token overlap, then subtracts the factual conflict penalty.
+- The fixed reduced score improves over the existing BGE hybrid baseline: PR-AUC `0.3468 -> 0.6156`, best F1 `0.3585 -> 0.5618`, and fixed F1 `0.2121 -> 0.5570`.
+- The sensitivity row `span_ranked` (`0.05 sentence + 0.95 span - 0.15 conflict_penalty`) is the strongest Unit 6 ranking setting. For BGE it improves PR-AUC over the best Unit 4 single-feature row from `0.8181` to `0.8454`, with best F1 tied at `0.8125`.
+- The sensitivity row `span_guarded` (`0.10 sentence + 0.80 span + 0.10 overlap - 0.10 conflict_penalty`) is the strongest Unit 6 fixed-threshold setting. For BGE it improves fixed-threshold F1 over the best Unit 4 single-feature row from `0.5419` to `0.7009`.
+- For MiniLM, `span_guarded` improves fixed-threshold F1 over the best Unit 4 span row from `0.6341` to `0.7255`, and `span_ranked` improves PR-AUC from `0.7950` to `0.8119`.
 
 ### Unit 7: Question-Type Reporting and Guarded Calibration
 

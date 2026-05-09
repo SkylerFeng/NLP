@@ -1,3 +1,4 @@
+from math import isfinite
 from typing import Dict, Iterable, List
 
 import numpy as np
@@ -11,6 +12,14 @@ from sklearn.metrics import (
 )
 
 from src.compute_similarity import threshold_similarity
+
+
+DEFAULT_MULTI_VIEW_HYBRID_WEIGHTS = {
+    "sentence": 0.35,
+    "span": 0.30,
+    "overlap": 0.15,
+    "conflict_penalty": 0.25,
+}
 
 
 def missing_fields(records: List[Dict], fields: Iterable[str]) -> List[str]:
@@ -29,6 +38,60 @@ def records_have_fields(records: List[Dict], fields: Iterable[str]) -> bool:
     Check whether every record contains every requested field.
     """
     return not missing_fields(records, fields)
+
+
+def finite_score(value: object, default: float | None = None) -> float | None:
+    if value is None:
+        return default
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        return default
+    return score if isfinite(score) else default
+
+
+def clamp_score(score: float) -> float:
+    return max(0.0, min(1.0, score))
+
+
+def multi_view_hybrid_score(
+    *,
+    sentence_similarity: object,
+    span_max_similarity: object | None = None,
+    entity_or_token_overlap: object | None = None,
+    factual_conflict_penalty: object | None = None,
+    weights: Dict[str, float] | None = None,
+) -> float:
+    """
+    Unit 6 reduced multi-view hybrid score.
+
+    Unit 5's factual embedding view is intentionally omitted. The remaining
+    positive weights are renormalized over present finite components, then the
+    factual conflict penalty is subtracted and the final score is clamped to
+    the classifier score range.
+    """
+    weights = weights or DEFAULT_MULTI_VIEW_HYBRID_WEIGHTS
+    components = [
+        ("sentence", finite_score(sentence_similarity)),
+        ("span", finite_score(span_max_similarity)),
+        ("overlap", finite_score(entity_or_token_overlap)),
+    ]
+    present_components = [
+        (name, score)
+        for name, score in components
+        if score is not None and weights.get(name, 0.0) > 0.0
+    ]
+    if not present_components:
+        return 0.0
+
+    positive_weight_total = sum(weights[name] for name, _ in present_components)
+    combined_score = sum(
+        (weights[name] / positive_weight_total) * float(score)
+        for name, score in present_components
+    )
+    penalty = finite_score(factual_conflict_penalty, 0.0) or 0.0
+    adjusted_score = combined_score - weights.get("conflict_penalty", 0.0) * penalty
+    return clamp_score(adjusted_score)
 
 
 def require_metric_fields(records: List[Dict], fields: Iterable[str]) -> None:

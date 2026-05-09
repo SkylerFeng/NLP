@@ -9,11 +9,16 @@ sys.path.append(str(PROJECT_ROOT))
 
 from src.answer_span import build_prediction_span_report
 from src.compute_similarity import DEFAULT_SPAN_BLEND_WEIGHT
-from src.entity_overlap import add_entity_overlap_scores, hybrid_similarity_score
+from src.entity_overlap import (
+    add_entity_overlap_scores,
+    entity_overlap_score,
+    hybrid_similarity_score,
+)
 from src.evaluate import (
     evaluate_similarity_as_classifier,
     find_best_threshold,
     get_failure_cases,
+    multi_view_hybrid_score,
     records_have_fields,
     summarize_similarity_by_correctness,
 )
@@ -114,6 +119,89 @@ def add_hybrid_scores(
                 entity_score=float(record.get("entity_overlap", 0.0)),
                 alpha=0.7,
             )
+        output_records.append(new_record)
+
+    return output_records
+
+
+MULTI_VIEW_HYBRID_VARIANTS = [
+    (
+        "fixed",
+        "Reduced fixed multi-view hybrid",
+        {
+            "sentence": 0.35,
+            "span": 0.30,
+            "overlap": 0.15,
+            "conflict_penalty": 0.25,
+        },
+    ),
+    (
+        "span_precision",
+        "Reduced span-precision multi-view hybrid",
+        {
+            "sentence": 0.25,
+            "span": 0.40,
+            "overlap": 0.15,
+            "conflict_penalty": 0.25,
+        },
+    ),
+    (
+        "span_guarded",
+        "Reduced span-guarded multi-view hybrid",
+        {
+            "sentence": 0.10,
+            "span": 0.80,
+            "overlap": 0.10,
+            "conflict_penalty": 0.10,
+        },
+    ),
+    (
+        "span_ranked",
+        "Reduced span-ranked multi-view hybrid",
+        {
+            "sentence": 0.05,
+            "span": 0.95,
+            "overlap": 0.00,
+            "conflict_penalty": 0.15,
+        },
+    ),
+    (
+        "semantic_recall",
+        "Reduced semantic-recall multi-view hybrid",
+        {
+            "sentence": 0.45,
+            "span": 0.20,
+            "overlap": 0.15,
+            "conflict_penalty": 0.25,
+        },
+    ),
+]
+
+
+def add_multi_view_hybrid_scores(
+    records: list[dict],
+    embedding_models: list[str],
+) -> list[dict]:
+    output_records = []
+
+    for record in records:
+        new_record = dict(record)
+        unit6_overlap = entity_overlap_score(
+            prediction=record.get("prediction_answer_span") or record.get("prediction", ""),
+            reference=record.get("reference_answer_v2") or record.get("reference_answer", ""),
+        )
+        new_record["unit6_entity_or_token_overlap"] = unit6_overlap
+        for model_name in embedding_models:
+            model_key = safe_model_name(model_name)
+            for variant_key, _, weights in MULTI_VIEW_HYBRID_VARIANTS:
+                output_field = f"unit6_{variant_key}_multi_view_hybrid_score_{model_key}"
+                new_record[output_field] = multi_view_hybrid_score(
+                    sentence_similarity=record.get(f"similarity_v2_{model_key}"),
+                    span_max_similarity=record.get(f"span_max_similarity_{model_key}"),
+                    entity_or_token_overlap=unit6_overlap,
+                    factual_conflict_penalty=record.get("factual_conflict_penalty"),
+                    weights=weights,
+                )
         output_records.append(new_record)
 
     return output_records
@@ -380,6 +468,32 @@ def factual_unit_ablation_rows(
     return rows
 
 
+def multi_view_hybrid_ablation_rows(
+    records: list[dict],
+    config: dict,
+    label_field: str,
+) -> list[dict]:
+    rows = []
+    similarity_threshold = config["evaluation"].get("similarity_threshold", 0.75)
+    for model_name in config["embedding"]["models"]:
+        model_key = safe_model_name(model_name)
+        for variant_key, method_prefix, _ in MULTI_VIEW_HYBRID_VARIANTS:
+            score_field = f"unit6_{variant_key}_multi_view_hybrid_score_{model_key}"
+            row = build_metric_row_if_available(
+                records,
+                stage="unit6",
+                method=f"{method_prefix}: {model_name}",
+                family="multi_view_hybrid_scoring",
+                score_field=score_field,
+                label_field=label_field,
+                reference_field="reference_answer_v2",
+                threshold=similarity_threshold,
+            )
+            if row is not None:
+                rows.append(row)
+    return rows
+
+
 def build_baseline_ablation_rows(
     records: list[dict],
     config: dict,
@@ -462,6 +576,7 @@ def build_baseline_ablation_rows(
     rows.extend(prediction_span_ablation_rows(records, config, label_field))
     rows.extend(span_similarity_ablation_rows(records, config, label_field))
     rows.extend(factual_unit_ablation_rows(records, config, label_field))
+    rows.extend(multi_view_hybrid_ablation_rows(records, config, label_field))
     rows.extend(configured_ablation_rows(records, config, label_field, reference_field))
     return rows
 
@@ -634,6 +749,7 @@ def main() -> None:
     print(f"Loaded {len(records)} records.")
     print(f"Using evaluation reference field: {reference_field}")
     records = add_hybrid_scores(records, embedding_models, reference_field)
+    records = add_multi_view_hybrid_scores(records, embedding_models)
 
     all_results = []
 
@@ -736,9 +852,11 @@ def main() -> None:
         table_dir / "dataset_statistics.csv",
         dataset_statistics(records, config, reference_field),
     )
+    baseline_ablation_rows = build_baseline_ablation_rows(records, config, reference_field)
+    write_csv(table_dir / "baseline_ablation_results.csv", baseline_ablation_rows)
     write_csv(
-        table_dir / "baseline_ablation_results.csv",
-        build_baseline_ablation_rows(records, config, reference_field),
+        table_dir / "multi_view_ablation_results.csv",
+        [row for row in baseline_ablation_rows if row["stage"] == "unit6"],
     )
     write_csv(
         table_dir / "case_studies.csv",
