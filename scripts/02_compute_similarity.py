@@ -133,6 +133,19 @@ def main() -> None:
             prediction_field="prediction",
             reference_field=reference_field,
         )
+        if config["data"]["dataset"] == "nq" and all(
+            "reference_answer_v2" in record for record in records
+        ):
+            print(f"Computing v2 reference similarity with embedding model: {model_name}")
+            records = add_similarity_scores(
+                records=records,
+                embedding_model=embedding_model,
+                embedding_model_name=model_name,
+                batch_size=batch_size,
+                prediction_field="prediction",
+                reference_field="reference_answer_v2",
+                output_field_prefix="similarity_v2",
+            )
 
     print(f"Saving similarity results to: {output_file}")
     save_jsonl(records, output_file)

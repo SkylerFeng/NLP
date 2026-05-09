@@ -43,12 +43,14 @@ def add_similarity_scores(
     batch_size: int = 32,
     prediction_field: str = "prediction",
     reference_field: str = "ground_truth",
+    output_field_prefix: str = "similarity",
 ) -> List[Dict]:
     """
     Compute prediction-reference cosine similarity and add it to records.
 
-    Output field example:
+    Output field examples:
         similarity_all_MiniLM_L6_v2
+        similarity_v2_all_MiniLM_L6_v2
     """
     predictions = [record.get(prediction_field, "") for record in records]
     references = [record.get(reference_field, "") for record in records]
@@ -71,7 +73,7 @@ def add_similarity_scores(
     )
 
     safe_model_name = embedding_model_name.replace("/", "_").replace("-", "_")
-    similarity_field = f"similarity_{safe_model_name}"
+    similarity_field = f"{output_field_prefix}_{safe_model_name}"
 
     output_records = []
 

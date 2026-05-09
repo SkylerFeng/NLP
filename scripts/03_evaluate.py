@@ -15,7 +15,7 @@ from src.evaluate import (
     records_have_fields,
     summarize_similarity_by_correctness,
 )
-from src.reference_answer import resolve_reference_field
+from src.reference_answer import build_reference_quality_report, resolve_reference_field
 from src.utils import (
     dataset_task_type,
     ensure_dir,
@@ -225,6 +225,31 @@ def configured_ablation_rows(
     return rows
 
 
+def reference_validation_ablation_rows(
+    records: list[dict],
+    config: dict,
+    label_field: str,
+) -> list[dict]:
+    rows = []
+    similarity_threshold = config["evaluation"].get("similarity_threshold", 0.75)
+    for model_name in config["embedding"]["models"]:
+        model_key = safe_model_name(model_name)
+        score_field = f"similarity_v2_{model_key}"
+        row = build_metric_row_if_available(
+            records,
+            stage="unit1",
+            method=f"Reference validation v2: {model_name}",
+            family="embedding_v2",
+            score_field=score_field,
+            label_field=label_field,
+            reference_field="reference_answer_v2",
+            threshold=similarity_threshold,
+        )
+        if row is not None:
+            rows.append(row)
+    return rows
+
+
 def build_baseline_ablation_rows(
     records: list[dict],
     config: dict,
@@ -303,6 +328,7 @@ def build_baseline_ablation_rows(
             )
         )
 
+    rows.extend(reference_validation_ablation_rows(records, config, label_field))
     rows.extend(configured_ablation_rows(records, config, label_field, reference_field))
     return rows
 
@@ -576,6 +602,13 @@ def main() -> None:
         table_dir / "case_studies.csv",
         build_case_studies(records, config, reference_field),
     )
+    reference_quality_report_path = table_dir / "reference_quality_report.csv"
+    reference_quality_rows = build_reference_quality_report(records)
+    if reference_quality_rows:
+        write_csv(reference_quality_report_path, reference_quality_rows)
+    elif reference_quality_report_path.exists():
+        reference_quality_report_path.unlink()
+
     label_change_audit_path = table_dir / "label_change_audit.csv"
     label_change_audit_rows = build_label_change_audit_rows(records, config, reference_field)
     if label_change_audit_rows:
