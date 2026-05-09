@@ -1,0 +1,13 @@
+run_id,model,score_variant,question_type,support,num_positive,num_negative,global_threshold,global_fixed_f1,cv_threshold_mean,cv_threshold_std,cv_fixed_f1,delta_f1,pr_auc,calibration_status
+unit7_check,BGE,span_guarded,when,100,10,90,0.750,0.690,0.852,0.041,0.762,0.072,0.965,applied
+unit7_check,BGE,span_guarded,where,80,12,68,0.750,0.759,0.784,0.012,0.692,-0.066,0.875,applied
+unit7_check,BGE,span_guarded,who,146,20,126,0.750,0.850,0.756,0.017,0.780,-0.070,0.857,applied
+unit7_check,BGE,span_ranked,when,100,10,90,0.750,0.513,0.872,0.041,0.762,0.249,0.965,applied
+unit7_check,BGE,span_ranked,where,80,12,68,0.750,0.632,0.848,0.004,0.815,0.183,0.885,applied
+unit7_check,BGE,span_ranked,who,146,20,126,0.750,0.667,0.856,0.030,0.780,0.114,0.872,applied
+unit7_check,MiniLM,span_guarded,when,100,10,90,0.750,0.769,0.794,0.012,0.833,0.064,0.918,applied
+unit7_check,MiniLM,span_guarded,where,80,12,68,0.750,0.800,0.750,0.000,0.800,0.000,0.841,applied
+unit7_check,MiniLM,span_guarded,who,146,20,126,0.750,0.800,0.788,0.004,0.842,0.042,0.853,applied
+unit7_check,MiniLM,span_ranked,when,100,10,90,0.750,0.541,0.858,0.045,0.696,0.155,0.954,applied
+unit7_check,MiniLM,span_ranked,where,80,12,68,0.750,0.733,0.872,0.040,0.696,-0.038,0.858,applied
+unit7_check,MiniLM,span_ranked,who,146,20,126,0.750,0.756,0.912,0.016,0.842,0.087,0.861,applied

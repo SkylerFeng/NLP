@@ -1,0 +1,11 @@
+area,metric,baseline_reference,v2_reference,interpretation
+reference_quality,pronoun_reference_count,16,0,Reference validation removes non-informative spans before embedding comparison.
+reference_quality,one_token_suspicious_reference_count,20,0,Reference validation removes non-informative spans before embedding comparison.
+reference_quality,long_evidence_fallback_count,46,45,Reference validation removes non-informative spans before embedding comparison.
+reference_quality,invalid_reference_count,67,45,Reference validation removes non-informative spans before embedding comparison.
+prediction_span,empty_prediction_span_count,,0,Span extraction always emits a comparison target.
+prediction_span,fallback_count,,275,Fallback rate shows many NQ predictions remain full-sentence/general answers.
+factual_units,number_conflict_count,,27,"Conflict flags are precision guards, not standalone correctness labels."
+factual_units,date_conflict_count,,57,"Conflict flags are precision guards, not standalone correctness labels."
+factual_units,entity_conflict_count,,294,"Conflict flags are precision guards, not standalone correctness labels."
+factual_units,any_conflict_count,,390,"Conflict flags are precision guards, not standalone correctness labels."

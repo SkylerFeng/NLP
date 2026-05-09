@@ -14,5 +14,6 @@
     "sentence-transformers/all-MiniLM-L6-v2",
     "BAAI/bge-base-en-v1.5"
   ],
+  "label_field": "correct_label",
   "evaluation_reference_field": "reference_answer"
 }

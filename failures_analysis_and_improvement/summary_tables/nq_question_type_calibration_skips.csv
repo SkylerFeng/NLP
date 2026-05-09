@@ -1,0 +1,6 @@
+question_type,skip_reason,num_score_variants
+definition,num_examples<50,4
+general,num_positive<10,4
+list,num_examples<50,4
+number,num_examples<50,4
+yes_no,num_examples<50,4
