@@ -539,6 +539,15 @@ Experiment gate:
 - Always keep question-type reporting.
 - Keep per-question-type thresholds only if they improve held-out or cross-validated metrics and do not rely on undersized buckets.
 
+Implementation note, 2026-05-09:
+
+- Unit 7 is implemented in run `results_nq_500/runs/unit7_check`.
+- `question_type_metrics.csv` now reports dataset-global rows, question-type rows under the global fixed threshold, and guarded threshold rows with explicit `question_type_cv` or `inherited_global` status.
+- Default calibration guards are `num_examples >= 50`, `num_positive >= 10`, `num_negative >= 10`, nonzero score standard deviation, and 5-fold stratified cross-validation.
+- NQ 500 supports calibrated question-type thresholds for `when`, `where`, and `who`. `definition`, `list`, `number`, and `yes_no` are skipped because `num_examples < 50`; `general` is skipped because `num_positive < 10`.
+- For BGE `span_ranked`, question-type CV improves fixed-threshold F1 for `when` from `0.5128` to `0.7619`, `where` from `0.6316` to `0.8148`, and `who` from `0.6667` to `0.7805`. Dataset-global BGE `span_ranked` remains strongest for ranking with PR-AUC `0.8454`.
+- For BGE `span_guarded`, question-type CV improves `when` fixed-threshold F1 from `0.6897` to `0.7619`, but lowers `where` from `0.7586` to `0.6923` and `who` from `0.8500` to `0.7805`, so per-type calibration should be reported as guarded analysis rather than replacing the global threshold wholesale.
+
 ## Experiment Matrix
 
 Run these ablations in order:

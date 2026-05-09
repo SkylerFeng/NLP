@@ -15,15 +15,25 @@ from src.entity_overlap import (
     hybrid_similarity_score,
 )
 from src.evaluate import (
+    DEFAULT_QUESTION_TYPE_MIN_EXAMPLES,
+    DEFAULT_QUESTION_TYPE_MIN_NEGATIVE,
+    DEFAULT_QUESTION_TYPE_MIN_POSITIVE,
+    DEFAULT_QUESTION_TYPE_NUM_FOLDS,
+    cross_validated_best_threshold_metrics,
     evaluate_similarity_as_classifier,
     find_best_threshold,
     get_failure_cases,
     multi_view_hybrid_score,
+    question_type_threshold_support,
     records_have_fields,
     summarize_similarity_by_correctness,
 )
 from src.factual_units import build_factual_unit_report
-from src.reference_answer import build_reference_quality_report, resolve_reference_field
+from src.reference_answer import (
+    build_reference_quality_report,
+    question_type_v2,
+    resolve_reference_field,
+)
 from src.utils import (
     dataset_task_type,
     ensure_dir,
@@ -178,6 +188,9 @@ MULTI_VIEW_HYBRID_VARIANTS = [
 ]
 
 
+QUESTION_TYPE_FIELD = "question_type_v2"
+
+
 def add_multi_view_hybrid_scores(
     records: list[dict],
     embedding_models: list[str],
@@ -204,6 +217,19 @@ def add_multi_view_hybrid_scores(
                 )
         output_records.append(new_record)
 
+    return output_records
+
+
+def ensure_question_type_fields(records: list[dict]) -> list[dict]:
+    output_records = []
+    for record in records:
+        if record.get(QUESTION_TYPE_FIELD):
+            output_records.append(record)
+            continue
+
+        new_record = dict(record)
+        new_record[QUESTION_TYPE_FIELD] = question_type_v2(str(record.get("question", "")))
+        output_records.append(new_record)
     return output_records
 
 
@@ -581,6 +607,316 @@ def build_baseline_ablation_rows(
     return rows
 
 
+def question_type_calibration_config(config: dict) -> dict:
+    calibration = config.get("evaluation", {}).get("question_type_calibration", {})
+    return {
+        "min_examples": int(
+            calibration.get("min_examples", DEFAULT_QUESTION_TYPE_MIN_EXAMPLES)
+        ),
+        "min_positive": int(
+            calibration.get("min_positive", DEFAULT_QUESTION_TYPE_MIN_POSITIVE)
+        ),
+        "min_negative": int(
+            calibration.get("min_negative", DEFAULT_QUESTION_TYPE_MIN_NEGATIVE)
+        ),
+        "num_folds": int(
+            calibration.get("num_folds", DEFAULT_QUESTION_TYPE_NUM_FOLDS)
+        ),
+    }
+
+
+def question_type_score_specs(
+    records: list[dict],
+    config: dict,
+    reference_field: str,
+) -> list[dict]:
+    label_field = config["evaluation"].get("label_field", "correct_label")
+    specs = []
+
+    for model_name in config["embedding"]["models"]:
+        model_key = safe_model_name(model_name)
+        candidates = [
+            (
+                "baseline",
+                f"Embedding cosine: {model_name}",
+                "embedding",
+                f"similarity_{model_key}",
+                reference_field,
+            ),
+            (
+                "baseline",
+                f"Hybrid 0.7*embedding+0.3*overlap: {model_name}",
+                "hybrid_ablation",
+                f"hybrid_{model_key}",
+                reference_field,
+            ),
+            (
+                "unit1",
+                f"Reference validation v2: {model_name}",
+                "embedding_v2",
+                f"similarity_v2_{model_key}",
+                "reference_answer_v2",
+            ),
+            (
+                "unit2",
+                (
+                    f"Reference validation + {DEFAULT_SPAN_BLEND_WEIGHT:.1f} span blend: "
+                    f"{model_name}"
+                ),
+                "prediction_span_ablation",
+                f"prediction_span_blend_similarity_{model_key}",
+                "reference_answer_v2",
+            ),
+            (
+                "unit3",
+                f"Span max similarity: {model_name}",
+                "span_similarity_ablation",
+                f"span_max_similarity_{model_key}",
+                "reference_answer_v2",
+            ),
+            (
+                "unit3",
+                f"Conservative multi-view score: {model_name}",
+                "span_similarity_ablation",
+                f"multi_view_score_{model_key}",
+                "reference_answer_v2",
+            ),
+            (
+                "unit4",
+                f"Factual conflict penalty on span max similarity: {model_name}",
+                "factual_conflict_penalty",
+                f"factual_conflict_adjusted_span_max_similarity_{model_key}",
+                "reference_answer_v2",
+            ),
+            (
+                "unit4",
+                f"Factual conflict penalty on multi-view score: {model_name}",
+                "factual_conflict_penalty",
+                f"factual_conflict_adjusted_multi_view_score_{model_key}",
+                "reference_answer_v2",
+            ),
+        ]
+
+        for variant_key, method_prefix, _ in MULTI_VIEW_HYBRID_VARIANTS:
+            candidates.append(
+                (
+                    "unit6",
+                    f"{method_prefix}: {model_name}",
+                    "multi_view_hybrid_scoring",
+                    f"unit6_{variant_key}_multi_view_hybrid_score_{model_key}",
+                    "reference_answer_v2",
+                )
+            )
+
+        for stage, method, family, score_field, candidate_reference_field in candidates:
+            required_fields = [
+                label_field,
+                score_field,
+                candidate_reference_field,
+                QUESTION_TYPE_FIELD,
+            ]
+            if records_have_fields(records, required_fields):
+                specs.append(
+                    {
+                        "stage": stage,
+                        "method": method,
+                        "family": family,
+                        "embedding_model": model_name,
+                        "score_field": score_field,
+                        "label_field": label_field,
+                        "reference_field": candidate_reference_field,
+                    }
+                )
+
+    return specs
+
+
+def add_question_type_row_metadata(
+    row: dict,
+    *,
+    config: dict,
+    spec: dict,
+    question_type: str,
+    threshold_scope: str,
+    calibration_status: str,
+    skip_reason: str = "",
+    support: dict | None = None,
+) -> dict:
+    support = support or {}
+    row.update(
+        {
+            "dataset": config["data"]["dataset"],
+            "task_type": dataset_task_type(config["data"]["dataset"]),
+            "embedding_model": spec["embedding_model"],
+            "question_type": question_type,
+            "threshold_scope": threshold_scope,
+            "calibration_status": calibration_status,
+            "skip_reason": skip_reason,
+            "num_examples": support.get(
+                "num_examples",
+                row.get("num_correct", 0) + row.get("num_incorrect", 0),
+            ),
+            "num_positive": support.get("num_positive", row.get("num_correct", 0)),
+            "num_negative": support.get("num_negative", row.get("num_incorrect", 0)),
+            "score_std": support.get("score_std", ""),
+            "cv_num_folds": "",
+            "cv_selected_thresholds": "",
+            "cv_mean_selected_threshold": "",
+            "cv_threshold_std": "",
+        }
+    )
+    return row
+
+
+def build_question_type_metric_rows(
+    records: list[dict],
+    config: dict,
+    reference_field: str,
+) -> list[dict]:
+    if not records:
+        return []
+
+    threshold = config["evaluation"].get("similarity_threshold", 0.75)
+    calibration = question_type_calibration_config(config)
+    rows = []
+
+    records = ensure_question_type_fields(records)
+    specs = question_type_score_specs(records, config, reference_field)
+    question_types = sorted(
+        {
+            str(record.get(QUESTION_TYPE_FIELD, "general") or "general")
+            for record in records
+        }
+    )
+
+    for spec in specs:
+        dataset_support = question_type_threshold_support(
+            records,
+            spec["score_field"],
+            spec["label_field"],
+            min_examples=1,
+            min_positive=0,
+            min_negative=0,
+        )
+        dataset_row = metric_row(
+            records,
+            spec["stage"],
+            spec["method"],
+            spec["family"],
+            spec["score_field"],
+            spec["label_field"],
+            spec["reference_field"],
+            threshold,
+        )
+        add_question_type_row_metadata(
+            dataset_row,
+            config=config,
+            spec=spec,
+            question_type="all",
+            threshold_scope="dataset_global",
+            calibration_status="dataset_reference",
+            support=dataset_support,
+        )
+        rows.append(dataset_row)
+
+        for qtype in question_types:
+            bucket = [
+                record
+                for record in records
+                if str(record.get(QUESTION_TYPE_FIELD, "general") or "general") == qtype
+            ]
+            if not bucket:
+                continue
+
+            support = question_type_threshold_support(
+                bucket,
+                spec["score_field"],
+                spec["label_field"],
+                min_examples=calibration["min_examples"],
+                min_positive=calibration["min_positive"],
+                min_negative=calibration["min_negative"],
+            )
+            global_row = metric_row(
+                bucket,
+                spec["stage"],
+                spec["method"],
+                spec["family"],
+                spec["score_field"],
+                spec["label_field"],
+                spec["reference_field"],
+                threshold,
+            )
+            add_question_type_row_metadata(
+                global_row,
+                config=config,
+                spec=spec,
+                question_type=qtype,
+                threshold_scope="global_fixed",
+                calibration_status="reporting_only",
+                support=support,
+            )
+            rows.append(global_row)
+
+            if support["supported"]:
+                cv_metrics = cross_validated_best_threshold_metrics(
+                    bucket,
+                    similarity_field=spec["score_field"],
+                    label_field=spec["label_field"],
+                    num_folds=calibration["num_folds"],
+                )
+                cv_row = {
+                    "stage": spec["stage"],
+                    "method": spec["method"],
+                    "family": spec["family"],
+                    "label_field": spec["label_field"],
+                    "score_field": spec["score_field"],
+                    "reference_field": spec["reference_field"],
+                    "num_correct": support["num_positive"],
+                    "num_incorrect": support["num_negative"],
+                    "correct_mean": "",
+                    "incorrect_mean": "",
+                    "gap": "",
+                    "fixed_threshold": cv_metrics["threshold"],
+                    "fixed_accuracy": cv_metrics["accuracy"],
+                    "fixed_precision": cv_metrics["precision"],
+                    "fixed_recall": cv_metrics["recall"],
+                    "fixed_f1": cv_metrics["f1"],
+                    "roc_auc": cv_metrics["roc_auc"],
+                    "pr_auc": cv_metrics["pr_auc"],
+                    "best_threshold": "",
+                    "best_accuracy": "",
+                    "best_precision": "",
+                    "best_recall": "",
+                    "best_f1": "",
+                    "high_similarity_wrong": "",
+                    "low_similarity_correct": "",
+                }
+                add_question_type_row_metadata(
+                    cv_row,
+                    config=config,
+                    spec=spec,
+                    question_type=qtype,
+                    threshold_scope="question_type_cv",
+                    calibration_status="applied",
+                    support=support,
+                )
+                cv_row["cv_num_folds"] = cv_metrics["num_folds"]
+                cv_row["cv_selected_thresholds"] = cv_metrics["selected_thresholds"]
+                cv_row["cv_mean_selected_threshold"] = cv_metrics[
+                    "mean_selected_threshold"
+                ]
+                cv_row["cv_threshold_std"] = cv_metrics["threshold_std"]
+                rows.append(cv_row)
+            else:
+                inherited_row = dict(global_row)
+                inherited_row["threshold_scope"] = "inherited_global"
+                inherited_row["calibration_status"] = "skipped"
+                inherited_row["skip_reason"] = str(support["reason"])
+                rows.append(inherited_row)
+
+    return rows
+
+
 def build_label_change_audit_rows(
     records: list[dict],
     config: dict,
@@ -748,6 +1084,7 @@ def main() -> None:
     validate_records_dataset(records, config["data"]["dataset"])
     print(f"Loaded {len(records)} records.")
     print(f"Using evaluation reference field: {reference_field}")
+    records = ensure_question_type_fields(records)
     records = add_hybrid_scores(records, embedding_models, reference_field)
     records = add_multi_view_hybrid_scores(records, embedding_models)
 
@@ -859,6 +1196,10 @@ def main() -> None:
         [row for row in baseline_ablation_rows if row["stage"] == "unit6"],
     )
     write_csv(
+        table_dir / "question_type_metrics.csv",
+        build_question_type_metric_rows(records, config, reference_field),
+    )
+    write_csv(
         table_dir / "case_studies.csv",
         build_case_studies(records, config, reference_field),
     )
@@ -907,6 +1248,7 @@ def main() -> None:
         "embedding_models": config["embedding"]["models"],
         "label_field": label_field,
         "evaluation_reference_field": reference_field,
+        "question_type_calibration": question_type_calibration_config(config),
     }
     metadata_path = table_dir / "run_metadata.json"
     with metadata_path.open("w", encoding="utf-8") as f:

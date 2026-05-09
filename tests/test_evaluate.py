@@ -2,7 +2,11 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-from src.evaluate import evaluate_similarity_as_classifier, multi_view_hybrid_score
+from src.evaluate import (
+    add_group_zscore_scores,
+    evaluate_similarity_as_classifier,
+    multi_view_hybrid_score,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -390,6 +394,89 @@ class EvaluationHarnessTest(unittest.TestCase):
         self.assertEqual(sum(row["label_changed"] for row in rows), 1)
         self.assertEqual(rows[0]["baseline_label_field"], "correct_label")
         self.assertEqual(rows[0]["candidate_label_field"], "correct_label_v2")
+
+    def test_question_type_metric_rows_report_global_and_inherited_thresholds(self):
+        rows = evaluate_script.build_question_type_metric_rows(
+            base_records(),
+            base_config(),
+            "reference_answer",
+        )
+
+        similarity_rows = [
+            row
+            for row in rows
+            if row["score_field"] == SIMILARITY_FIELD
+        ]
+
+        self.assertIn("all", {row["question_type"] for row in similarity_rows})
+        self.assertIn("where", {row["question_type"] for row in similarity_rows})
+        self.assertIn("dataset_global", {row["threshold_scope"] for row in similarity_rows})
+        self.assertIn("global_fixed", {row["threshold_scope"] for row in similarity_rows})
+        inherited = next(
+            row
+            for row in similarity_rows
+            if row["threshold_scope"] == "inherited_global"
+            and row["question_type"] == "where"
+        )
+        self.assertEqual(inherited["calibration_status"], "skipped")
+        self.assertEqual(inherited["skip_reason"], "num_examples<50")
+        self.assertEqual(inherited["embedding_model"], MODEL_NAME)
+
+    def test_question_type_calibration_uses_cv_when_bucket_is_supported(self):
+        records = []
+        for index, (label, score) in enumerate(
+            [(1, 0.9), (1, 0.8), (0, 0.1), (0, 0.1)]
+        ):
+            records.append(
+                {
+                    **base_records()[index % 2],
+                    "id": f"record-{index}",
+                    "question_type_v2": "where",
+                    "correct_label": label,
+                    SIMILARITY_FIELD: score,
+                    HYBRID_FIELD: score,
+                }
+            )
+        config = base_config()
+        config["evaluation"]["question_type_calibration"] = {
+            "min_examples": 4,
+            "min_positive": 2,
+            "min_negative": 2,
+            "num_folds": 2,
+        }
+
+        rows = evaluate_script.build_question_type_metric_rows(
+            records,
+            config,
+            "reference_answer",
+        )
+        cv_row = next(
+            row
+            for row in rows
+            if row["score_field"] == SIMILARITY_FIELD
+            and row["threshold_scope"] == "question_type_cv"
+            and row["question_type"] == "where"
+        )
+
+        self.assertEqual(cv_row["calibration_status"], "applied")
+        self.assertEqual(cv_row["cv_num_folds"], 2)
+        self.assertEqual(cv_row["fixed_f1"], 1.0)
+        self.assertNotEqual(cv_row["cv_selected_thresholds"], "")
+
+    def test_group_zscore_scores_are_added_per_question_type(self):
+        records = [
+            {"question_type_v2": "who", "score": 0.2},
+            {"question_type_v2": "who", "score": 0.8},
+            {"question_type_v2": "when", "score": 0.5},
+            {"question_type_v2": "when", "score": 0.5},
+        ]
+
+        output = add_group_zscore_scores(records, "score", "question_type_v2", "score_z")
+
+        self.assertAlmostEqual(output[0]["score_z"], -1.0)
+        self.assertAlmostEqual(output[1]["score_z"], 1.0)
+        self.assertEqual(output[2]["score_z"], 0.0)
+        self.assertEqual(output[3]["score_z"], 0.0)
 
     def test_missing_metric_fields_raise_clear_error(self):
         with self.assertRaisesRegex(ValueError, "missing_score"):

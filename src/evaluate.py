@@ -21,6 +21,11 @@ DEFAULT_MULTI_VIEW_HYBRID_WEIGHTS = {
     "conflict_penalty": 0.25,
 }
 
+DEFAULT_QUESTION_TYPE_MIN_EXAMPLES = 50
+DEFAULT_QUESTION_TYPE_MIN_POSITIVE = 10
+DEFAULT_QUESTION_TYPE_MIN_NEGATIVE = 10
+DEFAULT_QUESTION_TYPE_NUM_FOLDS = 5
+
 
 def missing_fields(records: List[Dict], fields: Iterable[str]) -> List[str]:
     """
@@ -136,6 +141,34 @@ def evaluate_similarity_as_classifier(
     return metrics
 
 
+def classification_metrics_from_predictions(
+    y_true: Iterable[int],
+    y_score: Iterable[float],
+    y_pred: Iterable[int],
+    threshold: float,
+) -> Dict[str, float]:
+    y_true = np.array(list(y_true))
+    y_score = np.array(list(y_score))
+    y_pred = np.array(list(y_pred))
+
+    metrics = {
+        "threshold": float(threshold),
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "precision": float(precision_score(y_true, y_pred, zero_division=0)),
+        "recall": float(recall_score(y_true, y_pred, zero_division=0)),
+        "f1": float(f1_score(y_true, y_pred, zero_division=0)),
+    }
+
+    if len(set(y_true)) > 1:
+        metrics["roc_auc"] = float(roc_auc_score(y_true, y_score))
+        metrics["pr_auc"] = float(average_precision_score(y_true, y_score))
+    else:
+        metrics["roc_auc"] = float("nan")
+        metrics["pr_auc"] = float("nan")
+
+    return metrics
+
+
 def find_best_threshold(
     records: List[Dict],
     similarity_field: str,
@@ -162,6 +195,226 @@ def find_best_threshold(
             best_result = result
 
     return best_result
+
+
+def best_threshold_from_arrays(
+    y_true: Iterable[int],
+    y_score: Iterable[float],
+    thresholds: List[float],
+) -> Dict[str, float]:
+    y_true = np.array(list(y_true))
+    y_score = np.array(list(y_score))
+    best_threshold = thresholds[0]
+    best_f1 = -1.0
+
+    for threshold in thresholds:
+        y_pred = y_score >= threshold
+        true_positive = int(np.sum((y_true == 1) & y_pred))
+        false_positive = int(np.sum((y_true == 0) & y_pred))
+        false_negative = int(np.sum((y_true == 1) & ~y_pred))
+        precision_denominator = true_positive + false_positive
+        recall_denominator = true_positive + false_negative
+        precision = (
+            true_positive / precision_denominator
+            if precision_denominator
+            else 0.0
+        )
+        recall = true_positive / recall_denominator if recall_denominator else 0.0
+        f1_denominator = precision + recall
+        f1 = 2 * precision * recall / f1_denominator if f1_denominator else 0.0
+        if f1 > best_f1:
+            best_f1 = f1
+            best_threshold = threshold
+
+    y_pred = np.array(
+        [threshold_similarity(score, best_threshold) for score in y_score]
+    )
+    return classification_metrics_from_predictions(
+        y_true=y_true,
+        y_score=y_score,
+        y_pred=y_pred,
+        threshold=best_threshold,
+    )
+
+
+def score_standard_deviation(records: List[Dict], score_field: str) -> float:
+    require_metric_fields(records, [score_field])
+    scores = [float(record[score_field]) for record in records]
+    return float(np.std(scores)) if scores else float("nan")
+
+
+def question_type_threshold_support(
+    records: List[Dict],
+    score_field: str,
+    label_field: str = "correct_label",
+    min_examples: int = DEFAULT_QUESTION_TYPE_MIN_EXAMPLES,
+    min_positive: int = DEFAULT_QUESTION_TYPE_MIN_POSITIVE,
+    min_negative: int = DEFAULT_QUESTION_TYPE_MIN_NEGATIVE,
+) -> Dict[str, object]:
+    """
+    Decide whether a question-type bucket is large enough for its own threshold.
+    """
+    missing = missing_fields(records, [label_field, score_field])
+    if missing:
+        return {
+            "supported": False,
+            "reason": "missing_fields:" + ",".join(missing),
+            "num_examples": len(records),
+            "num_positive": 0,
+            "num_negative": 0,
+            "score_std": float("nan"),
+        }
+
+    labels = [int(record[label_field]) for record in records]
+    num_positive = sum(labels)
+    num_negative = len(labels) - num_positive
+    score_std = score_standard_deviation(records, score_field) if records else float("nan")
+
+    if len(records) < min_examples:
+        reason = f"num_examples<{min_examples}"
+    elif num_positive < min_positive:
+        reason = f"num_positive<{min_positive}"
+    elif num_negative < min_negative:
+        reason = f"num_negative<{min_negative}"
+    elif not isfinite(score_std) or score_std == 0.0:
+        reason = "zero_score_std"
+    else:
+        reason = "supported"
+
+    return {
+        "supported": reason == "supported",
+        "reason": reason,
+        "num_examples": len(records),
+        "num_positive": num_positive,
+        "num_negative": num_negative,
+        "score_std": score_std,
+    }
+
+
+def stratified_fold_indices(
+    records: List[Dict],
+    label_field: str,
+    num_folds: int,
+) -> List[List[int]]:
+    require_metric_fields(records, [label_field])
+    num_folds = max(2, min(num_folds, len(records)))
+    folds = [[] for _ in range(num_folds)]
+    by_label: Dict[int, List[int]] = {}
+
+    for index, record in enumerate(records):
+        label = int(record[label_field])
+        by_label.setdefault(label, []).append(index)
+
+    for label in sorted(by_label):
+        for offset, index in enumerate(by_label[label]):
+            folds[offset % num_folds].append(index)
+
+    return [sorted(fold) for fold in folds if fold]
+
+
+def cross_validated_best_threshold_metrics(
+    records: List[Dict],
+    similarity_field: str,
+    label_field: str = "correct_label",
+    thresholds: List[float] | None = None,
+    num_folds: int = DEFAULT_QUESTION_TYPE_NUM_FOLDS,
+) -> Dict[str, object]:
+    """
+    Select thresholds on training folds and report held-out predictions.
+    """
+    require_metric_fields(records, [label_field, similarity_field])
+    if thresholds is None:
+        thresholds = [round(x, 2) for x in np.arange(0.0, 1.01, 0.01)]
+
+    folds = stratified_fold_indices(records, label_field, num_folds)
+    selected_thresholds = []
+    y_true = []
+    y_score = []
+    y_pred = []
+    all_indices = set(range(len(records)))
+
+    for validation_indices in folds:
+        validation_set = set(validation_indices)
+        training_indices = sorted(all_indices - validation_set)
+        if not training_indices:
+            continue
+
+        validation_records = [records[index] for index in validation_indices]
+        best_metrics = best_threshold_from_arrays(
+            y_true=[int(records[index][label_field]) for index in training_indices],
+            y_score=[
+                float(records[index][similarity_field])
+                for index in training_indices
+            ],
+            thresholds=thresholds,
+        )
+        threshold = float(best_metrics["threshold"])
+        selected_thresholds.append(threshold)
+
+        for record in validation_records:
+            score = float(record[similarity_field])
+            y_true.append(int(record[label_field]))
+            y_score.append(score)
+            y_pred.append(threshold_similarity(score, threshold))
+
+    if not y_true:
+        raise ValueError("Cannot cross-validate threshold without validation records.")
+
+    mean_threshold = float(np.mean(selected_thresholds)) if selected_thresholds else 0.0
+    metrics = classification_metrics_from_predictions(
+        y_true=y_true,
+        y_score=y_score,
+        y_pred=y_pred,
+        threshold=mean_threshold,
+    )
+    metrics.update(
+        {
+            "num_folds": len(folds),
+            "selected_thresholds": ";".join(
+                f"{threshold:.2f}" for threshold in selected_thresholds
+            ),
+            "mean_selected_threshold": mean_threshold,
+            "threshold_std": float(np.std(selected_thresholds))
+            if selected_thresholds
+            else float("nan"),
+        }
+    )
+    return metrics
+
+
+def add_group_zscore_scores(
+    records: List[Dict],
+    score_field: str,
+    group_field: str,
+    output_field: str,
+) -> List[Dict]:
+    """
+    Add within-group z-scores for optional calibrated reporting.
+    """
+    require_metric_fields(records, [score_field, group_field])
+    grouped_scores: Dict[str, List[float]] = {}
+    for record in records:
+        grouped_scores.setdefault(str(record[group_field]), []).append(
+            float(record[score_field])
+        )
+
+    group_stats = {
+        group: (float(np.mean(scores)), float(np.std(scores)))
+        for group, scores in grouped_scores.items()
+    }
+
+    output_records = []
+    for record in records:
+        group = str(record[group_field])
+        score_mean, score_std = group_stats[group]
+        new_record = dict(record)
+        if score_std == 0.0:
+            new_record[output_field] = 0.0
+        else:
+            new_record[output_field] = (float(record[score_field]) - score_mean) / score_std
+        output_records.append(new_record)
+
+    return output_records
 
 
 def summarize_similarity_by_correctness(
