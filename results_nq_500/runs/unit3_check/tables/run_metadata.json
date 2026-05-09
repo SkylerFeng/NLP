@@ -1,0 +1,21 @@
+{
+  "dataset": "nq",
+  "task_type": "long_form",
+  "sample_size": 500,
+  "prediction_input_file": "processed_data/nq/merged_fb.json",
+  "prediction_output_file": "data/predictions/nq_qwen25_7b_instruct_predictions_500.jsonl",
+  "similarity_input_file": "data/predictions/nq_qwen25_7b_instruct_predictions_500.jsonl",
+  "similarity_output_file": "results_nq_500/runs/unit3_check/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl",
+  "evaluation_input_file": "results_nq_500/runs/unit3_check/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl",
+  "results_dir": "results_nq_500/runs/unit3_check",
+  "base_results_dir": "results_nq_500",
+  "run_id": "unit3_check",
+  "llm_provider": "qwen",
+  "llm_model": "qwen2.5-7b-instruct",
+  "embedding_models": [
+    "sentence-transformers/all-MiniLM-L6-v2",
+    "BAAI/bge-base-en-v1.5"
+  ],
+  "label_field": "correct_label",
+  "evaluation_reference_field": "reference_answer"
+}

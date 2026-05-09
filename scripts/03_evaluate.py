@@ -280,6 +280,38 @@ def prediction_span_ablation_rows(
     return rows
 
 
+def span_similarity_ablation_rows(
+    records: list[dict],
+    config: dict,
+    label_field: str,
+) -> list[dict]:
+    rows = []
+    similarity_threshold = config["evaluation"].get("similarity_threshold", 0.75)
+    score_specs = [
+        ("multi_view_score", "Conservative multi-view score"),
+        ("span_max_similarity", "Span max similarity"),
+        ("span_topk_mean_similarity", "Span top-k mean similarity"),
+        ("reference_to_prediction_span_similarity", "Reference-to-prediction span similarity"),
+    ]
+    for model_name in config["embedding"]["models"]:
+        model_key = safe_model_name(model_name)
+        for field_prefix, method_prefix in score_specs:
+            score_field = f"{field_prefix}_{model_key}"
+            row = build_metric_row_if_available(
+                records,
+                stage="unit3",
+                method=f"{method_prefix}: {model_name}",
+                family="span_similarity_ablation",
+                score_field=score_field,
+                label_field=label_field,
+                reference_field="reference_answer_v2",
+                threshold=similarity_threshold,
+            )
+            if row is not None:
+                rows.append(row)
+    return rows
+
+
 def build_baseline_ablation_rows(
     records: list[dict],
     config: dict,
@@ -360,6 +392,7 @@ def build_baseline_ablation_rows(
 
     rows.extend(reference_validation_ablation_rows(records, config, label_field))
     rows.extend(prediction_span_ablation_rows(records, config, label_field))
+    rows.extend(span_similarity_ablation_rows(records, config, label_field))
     rows.extend(configured_ablation_rows(records, config, label_field, reference_field))
     return rows
 

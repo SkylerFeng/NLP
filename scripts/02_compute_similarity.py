@@ -12,6 +12,7 @@ from src.compute_similarity import (
     add_similarity_scores,
 )
 from src.correctness_labeling import label_correctness_for_records
+from src.multi_view_similarity import add_span_level_similarity_scores
 from src.reference_answer import prepare_reference_answers, resolve_reference_field
 from src.utils import (
     ensure_dir,
@@ -175,6 +176,15 @@ def main() -> None:
                 span_score_field=f"prediction_span_similarity_{model_key}",
                 output_field=f"prediction_span_blend_similarity_{model_key}",
                 span_weight=DEFAULT_SPAN_BLEND_WEIGHT,
+            )
+            print(f"Computing span-level similarity with embedding model: {model_name}")
+            records = add_span_level_similarity_scores(
+                records=records,
+                embedding_model=embedding_model,
+                embedding_model_name=model_name,
+                batch_size=batch_size,
+                reference_field="reference_answer_v2",
+                sentence_similarity_field=f"similarity_v2_{model_key}",
             )
 
     print(f"Saving similarity results to: {output_file}")
