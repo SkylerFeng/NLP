@@ -15,6 +15,7 @@ from src.utils import (
     print_config_summary,
     save_jsonl,
     validate_records_dataset,
+    write_latest_run_marker,
 )
 
 
@@ -79,7 +80,7 @@ def config_path_from_args() -> str:
 
 
 def main() -> None:
-    config = load_config(config_path_from_args())
+    config = load_config(config_path_from_args(), stage="similarity")
 
     input_file = config["similarity"]["input_file"]
     output_file = config["similarity"]["output_file"]
@@ -149,6 +150,7 @@ def main() -> None:
 
     print(f"Saving similarity results to: {output_file}")
     save_jsonl(records, output_file)
+    write_latest_run_marker(config)
 
     print("Similarity computation finished.")
 

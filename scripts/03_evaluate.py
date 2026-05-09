@@ -470,7 +470,7 @@ def config_path_from_args() -> str:
 
 
 def main() -> None:
-    config = load_config(config_path_from_args())
+    config = load_config(config_path_from_args(), stage="evaluation")
 
     input_file = config["evaluation"]["input_file"]
     threshold = config["evaluation"].get("similarity_threshold", 0.75)
@@ -626,6 +626,8 @@ def main() -> None:
         "similarity_output_file": config["similarity"]["output_file"],
         "evaluation_input_file": config["evaluation"]["input_file"],
         "results_dir": config["output"]["results_dir"],
+        "base_results_dir": config["output"].get("base_results_dir", ""),
+        "run_id": config["project"].get("resolved_run_id", ""),
         "llm_provider": config["llm"].get("provider"),
         "llm_model": config["llm"].get("model"),
         "embedding_models": config["embedding"]["models"],

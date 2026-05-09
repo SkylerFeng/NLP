@@ -11,8 +11,14 @@ from src.generate_predictions import (
 from src.utils import ensure_dir, load_config, print_config_summary
 
 
+def config_path_from_args() -> str:
+    if len(sys.argv) > 1:
+        return sys.argv[1]
+    return "config.yaml"
+
+
 def main() -> None:
-    config = load_config("config.yaml")
+    config = load_config(config_path_from_args(), stage="prediction")
 
     input_file = config["prediction"]["input_file"]
     output_file = config["prediction"]["output_file"]

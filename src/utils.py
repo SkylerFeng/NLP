@@ -1,6 +1,9 @@
 import json
+import os
 import random
 import re
+from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
@@ -22,6 +25,8 @@ DATASET_TASK_TYPES = {
     "truthfulQA": "long_form",
 }
 
+LATEST_RUN_FILENAME = "latest_run_id.txt"
+
 
 def set_seed(seed: int) -> None:
     """
@@ -31,7 +36,7 @@ def set_seed(seed: int) -> None:
     np.random.seed(seed)
 
 
-def load_config(config_path: str = "config.yaml") -> Dict[str, Any]:
+def load_config(config_path: str = "config.yaml", stage: str | None = None) -> Dict[str, Any]:
     """
     Load YAML config file.
     """
@@ -43,7 +48,7 @@ def load_config(config_path: str = "config.yaml") -> Dict[str, Any]:
     with config_path.open("r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
-    return resolve_config(config)
+    return resolve_config(config, stage=stage)
 
 
 def slugify(value: str) -> str:
@@ -64,7 +69,50 @@ def sample_tag(sample_size: Any) -> str:
     return "full" if sample_size is None else str(sample_size)
 
 
-def resolve_config(config: Dict[str, Any]) -> Dict[str, Any]:
+def generated_run_id() -> str:
+    return datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+
+def latest_run_id_path(base_results_dir: Path) -> Path:
+    return base_results_dir / LATEST_RUN_FILENAME
+
+
+def read_latest_run_id(base_results_dir: Path) -> str:
+    path = latest_run_id_path(base_results_dir)
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8").strip()
+
+
+def resolve_run_id(project_config: Dict[str, Any], base_results_dir: Path, stage: str | None) -> str:
+    configured_run_id = project_config.get("run_id")
+    if configured_run_id and configured_run_id != "auto":
+        return slugify(configured_run_id)
+
+    environment_run_id = os.environ.get("EXPERIMENT_RUN_ID")
+    if environment_run_id:
+        return slugify(environment_run_id)
+
+    if stage in {"evaluation", "visualization"}:
+        latest_run_id = read_latest_run_id(base_results_dir)
+        if latest_run_id:
+            return latest_run_id
+
+    return generated_run_id()
+
+
+def write_latest_run_marker(config: Dict[str, Any]) -> None:
+    run_id = config.get("project", {}).get("resolved_run_id")
+    base_results_dir = config.get("output", {}).get("base_results_dir")
+    if not run_id or not base_results_dir:
+        return
+
+    path = latest_run_id_path(Path(base_results_dir))
+    ensure_dir(path.parent)
+    path.write_text(str(run_id) + "\n", encoding="utf-8")
+
+
+def resolve_config(config: Dict[str, Any], stage: str | None = None) -> Dict[str, Any]:
     """
     Resolve dataset-specific paths from config.
 
@@ -72,7 +120,7 @@ def resolve_config(config: Dict[str, Any]) -> Dict[str, Any]:
     data.sample_size. All input, intermediate, and result paths are derived from
     those fields to avoid mixing SciQ, NQ, Wiki, and TruthfulQA outputs.
     """
-    config = dict(config)
+    config = deepcopy(config)
     config.setdefault("project", {})
     config.setdefault("data", {})
     config.setdefault("llm", {})
@@ -90,10 +138,39 @@ def resolve_config(config: Dict[str, Any]) -> Dict[str, Any]:
         data_file = config["data"].get("data_file", "merged_fb.json")
         prediction_dir = Path(config["data"].get("prediction_dir", "data/predictions"))
         similarity_dir = Path(config["data"].get("similarity_dir", "data/similarity"))
-        results_dir = Path(f"results_{dataset}_{tag}")
+        results_base_dir = Path(f"results_{dataset}_{tag}")
 
         prediction_file = prediction_dir / f"{dataset}_{llm_name}_predictions_{tag}.jsonl"
-        similarity_file = similarity_dir / f"{dataset}_{llm_name}_similarity_{tag}.jsonl"
+        legacy_similarity_file = similarity_dir / f"{dataset}_{llm_name}_similarity_{tag}.jsonl"
+        preserve_runs = (
+            config["project"].get("preserve_runs", True)
+            and stage != "prediction"
+        )
+
+        if preserve_runs:
+            run_id = resolve_run_id(config["project"], results_base_dir, stage)
+            results_dir = results_base_dir / "runs" / run_id
+            similarity_file = (
+                results_dir
+                / "similarity"
+                / f"{dataset}_{llm_name}_similarity_{tag}.jsonl"
+            )
+            configured_run_id = config["project"].get("run_id")
+            if (
+                stage in {"evaluation", "visualization"}
+                and not read_latest_run_id(results_base_dir)
+                and not os.environ.get("EXPERIMENT_RUN_ID")
+                and (not configured_run_id or configured_run_id == "auto")
+                and legacy_similarity_file.exists()
+            ):
+                similarity_file = legacy_similarity_file
+            config["project"]["resolved_run_id"] = run_id
+            config["output"]["base_results_dir"] = str(results_base_dir)
+        else:
+            results_dir = results_base_dir
+            similarity_file = legacy_similarity_file
+            config["project"].pop("resolved_run_id", None)
+            config["output"].pop("base_results_dir", None)
 
         config["prediction"]["input_file"] = str(data_root / dataset / data_file)
         config["prediction"]["output_file"] = str(prediction_file)
@@ -153,6 +230,8 @@ def print_config_summary(config: Dict[str, Any]) -> None:
     print(f"  prediction_output: {config['prediction']['output_file']}")
     print(f"  similarity_output: {config['similarity']['output_file']}")
     print(f"  results_dir: {config['output']['results_dir']}")
+    if config.get("project", {}).get("resolved_run_id"):
+        print(f"  run_id: {config['project']['resolved_run_id']}")
 
 
 def validate_records_dataset(records: List[Dict[str, Any]], expected_dataset: str) -> None:

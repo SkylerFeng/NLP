@@ -4,6 +4,12 @@ project:
   # If true, scripts derive input/output paths from data.dataset and sample_size.
   # This prevents writing SciQ outputs into an NQ result folder.
   auto_paths: true
+  # If true, similarity/evaluation artifacts are written under
+  # results_<dataset>_<sample>/runs/<run_id>/ instead of overwriting prior runs.
+  preserve_runs: true
+  # auto creates a new run for similarity computation and makes evaluation use
+  # the latest completed run. Set a fixed value to intentionally rerun one run.
+  run_id: auto
 
 data:
   # 可选值：
