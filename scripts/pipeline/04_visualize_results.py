@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# Allow running this script directly from the repository root without packaging src.
 sys.path.append(str(PROJECT_ROOT))
 
 from src.utils import ensure_dir, load_config, load_jsonl, print_config_summary, validate_records_dataset
@@ -24,6 +25,7 @@ def config_path_from_args() -> str:
 
 
 def main() -> None:
+    # Visualization reads the same resolved input as evaluation, including latest run handling.
     config = load_config(config_path_from_args(), stage="visualization")
 
     input_file = config["evaluation"]["input_file"]
@@ -50,6 +52,7 @@ def main() -> None:
         roc_path = figure_dir / f"roc_curve_{model_key}.png"
         pr_path = figure_dir / f"pr_curve_{model_key}.png"
 
+        # Keep one consistently named figure set per embedding model.
         plot_similarity_distribution(
             records=records,
             similarity_field=similarity_field,

@@ -26,6 +26,7 @@ DATASET_TASK_TYPES = {
 }
 
 LATEST_RUN_FILENAME = "latest_run_id.txt"
+# Default project layout used when config.yaml asks for automatic path resolution.
 DEFAULT_DATA_ROOT = "data/raw"
 DEFAULT_PREDICTION_DIR = "data/interim/predictions"
 DEFAULT_SIMILARITY_DIR = "data/interim/similarity"
@@ -93,11 +94,13 @@ def resolve_run_id(project_config: Dict[str, Any], base_results_dir: Path, stage
     if configured_run_id and configured_run_id != "auto":
         return slugify(configured_run_id)
 
+    # Environment override is useful for rerunning all stages against one fixed run.
     environment_run_id = os.environ.get("EXPERIMENT_RUN_ID")
     if environment_run_id:
         return slugify(environment_run_id)
 
     if stage in {"evaluation", "visualization"}:
+        # Downstream stages default to the latest similarity run created earlier.
         latest_run_id = read_latest_run_id(base_results_dir)
         if latest_run_id:
             return latest_run_id
@@ -168,6 +171,7 @@ def resolve_config(config: Dict[str, Any], stage: str | None = None) -> Dict[str
                 and (not configured_run_id or configured_run_id == "auto")
                 and legacy_similarity_file.exists()
             ):
+                # Keep old fixed-path artifacts readable when no run marker exists yet.
                 similarity_file = legacy_similarity_file
             config["project"]["resolved_run_id"] = run_id
             config["output"]["experiments_dir"] = str(experiments_dir)
@@ -209,6 +213,7 @@ def validate_config(config: Dict[str, Any]) -> None:
     )
 
     if Path(config["prediction"]["input_file"]) != expected_input:
+        # This guard prevents evaluating one dataset while accidentally reading another.
         raise ValueError(
             "Config mismatch: prediction.input_file does not match data.dataset. "
             f"Expected '{expected_input}', got '{config['prediction']['input_file']}'. "

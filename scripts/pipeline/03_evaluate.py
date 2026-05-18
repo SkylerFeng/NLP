@@ -5,6 +5,7 @@ from pathlib import Path
 from statistics import mean
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# Allow running this script directly from the repository root without packaging src.
 sys.path.append(str(PROJECT_ROOT))
 
 from src.answer_span import build_prediction_span_report
@@ -60,6 +61,7 @@ def write_csv(path: Path, rows: list[dict]) -> None:
         return
 
     ensure_dir(path.parent)
+    # Preserve first-seen key order so generated CSVs stay stable and readable.
     fieldnames = []
     for row in rows:
         for key in row:
@@ -135,6 +137,8 @@ def add_hybrid_scores(
 
 
 MULTI_VIEW_HYBRID_VARIANTS = [
+    # Each variant expresses a different precision/recall tradeoff for NQ
+    # answer-focused scoring. The rows are exported as ablation evidence.
     (
         "fixed",
         "Reduced fixed multi-view hybrid",
@@ -243,6 +247,8 @@ def metric_row(
     reference_field: str,
     threshold: float,
 ) -> dict:
+    # One table row always reports distribution, fixed-threshold, best-threshold,
+    # and failure-case counts for a single score field.
     summary = summarize_similarity_by_correctness(
         records=records,
         similarity_field=score_field,
@@ -307,6 +313,8 @@ def build_metric_row_if_available(
     reference_field: str,
     threshold: float,
 ) -> dict | None:
+    # Some ablation fields only exist for later runs; skip them instead of
+    # failing older baseline outputs.
     if not records_have_fields(records, [label_field, score_field, reference_field]):
         return None
 
@@ -603,6 +611,7 @@ def build_baseline_ablation_rows(
     rows.extend(span_similarity_ablation_rows(records, config, label_field))
     rows.extend(factual_unit_ablation_rows(records, config, label_field))
     rows.extend(multi_view_hybrid_ablation_rows(records, config, label_field))
+    # Configured rows let experiments add ad hoc score fields without editing code.
     rows.extend(configured_ablation_rows(records, config, label_field, reference_field))
     return rows
 
@@ -633,6 +642,7 @@ def question_type_score_specs(
     label_field = config["evaluation"].get("label_field", "correct_label")
     specs = []
 
+    # Only include score/reference combinations that are present in the loaded run.
     for model_name in config["embedding"]["models"]:
         model_key = safe_model_name(model_name)
         candidates = [
@@ -858,6 +868,8 @@ def build_question_type_metric_rows(
             rows.append(global_row)
 
             if support["supported"]:
+                # Supported buckets get an internal CV threshold; sparse buckets
+                # inherit the global threshold and record a skip reason below.
                 cv_metrics = cross_validated_best_threshold_metrics(
                     bucket,
                     similarity_field=spec["score_field"],
@@ -1085,6 +1097,8 @@ def main() -> None:
     print(f"Loaded {len(records)} records.")
     print(f"Using evaluation reference field: {reference_field}")
     records = ensure_question_type_fields(records)
+    # Add derived scores before building tables so all baselines and ablations
+    # are computed from the exact same loaded records.
     records = add_hybrid_scores(records, embedding_models, reference_field)
     records = add_multi_view_hybrid_scores(records, embedding_models)
 

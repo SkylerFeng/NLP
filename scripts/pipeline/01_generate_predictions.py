@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# Allow running this script directly from the repository root without packaging src.
 sys.path.append(str(PROJECT_ROOT))
 
 from src.generate_predictions import (
@@ -18,6 +19,7 @@ def config_path_from_args() -> str:
 
 
 def main() -> None:
+    # The prediction stage writes reusable intermediate data, not a run-specific artifact.
     config = load_config(config_path_from_args(), stage="prediction")
 
     input_file = config["prediction"]["input_file"]
@@ -26,6 +28,7 @@ def main() -> None:
 
     ensure_dir(Path(output_file).parent)
 
+    # The client is configured from config.yaml so the pipeline can switch providers.
     llm_client = create_llm_client(config)
 
     print_config_summary(config)
