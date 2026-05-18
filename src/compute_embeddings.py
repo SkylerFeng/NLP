@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, Iterable, List
 
 import numpy as np
 from tqdm import tqdm
@@ -59,6 +59,9 @@ def compute_text_embeddings(
     """
     Compute embeddings for a list of texts.
     """
+    if not texts:
+        return np.array([])
+
     all_embeddings = []
 
     for batch in tqdm(list(chunk_list(texts, batch_size)), desc="Computing embeddings"):
@@ -66,6 +69,76 @@ def compute_text_embeddings(
         all_embeddings.append(batch_embeddings)
 
     return np.vstack(all_embeddings)
+
+
+def embedding_cache_key(text: object) -> str:
+    """
+    Normalize text just enough for cache lookup without changing casing.
+    """
+    if text is None:
+        return ""
+    return " ".join(str(text).strip().split())
+
+
+class EmbeddingCache:
+    """
+    In-memory embedding cache for one embedding model.
+
+    The cache is intentionally per model, so keys only need to represent text.
+    It reuses embeddings across multiple similarity views in one pipeline run.
+    """
+
+    def __init__(
+        self,
+        embedding_model: BaseEmbeddingModel,
+        batch_size: int = 32,
+    ):
+        if batch_size <= 0:
+            raise ValueError("batch_size must be positive.")
+        self.embedding_model = embedding_model
+        self.batch_size = batch_size
+        self._embeddings: Dict[str, np.ndarray] = {}
+
+    def ensure_texts(self, texts: Iterable[object]) -> None:
+        missing_texts = []
+        missing_keys = set()
+        for text in texts:
+            key = embedding_cache_key(text)
+            if key in self._embeddings or key in missing_keys:
+                continue
+            missing_keys.add(key)
+            missing_texts.append(key)
+
+        if not missing_texts:
+            return
+
+        embeddings = compute_text_embeddings(
+            missing_texts,
+            embedding_model=self.embedding_model,
+            batch_size=self.batch_size,
+        )
+        for text, embedding in zip(missing_texts, embeddings):
+            self._embeddings[text] = embedding
+
+    def embeddings_for(self, texts: List[object]) -> np.ndarray:
+        if not texts:
+            return np.array([])
+
+        self.ensure_texts(texts)
+        return np.vstack(
+            [
+                self._embeddings[embedding_cache_key(text)]
+                for text in texts
+            ]
+        )
+
+    def embedding_lookup(self, texts: Iterable[str]) -> Dict[str, np.ndarray]:
+        text_list = list(texts)
+        self.ensure_texts(text_list)
+        return {
+            text: self._embeddings[embedding_cache_key(text)]
+            for text in text_list
+        }
 
 
 def add_embeddings_to_records(

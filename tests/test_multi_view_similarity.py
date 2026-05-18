@@ -1,6 +1,8 @@
 import unittest
 
 import numpy as np
+
+from src.compute_embeddings import EmbeddingCache
 from src.multi_view_similarity import (
     add_span_level_similarity_scores,
     prediction_span_candidates,
@@ -15,8 +17,10 @@ MODEL_KEY = "sentence_transformers_all_MiniLM_L6_v2"
 class DummyEmbeddingModel:
     def __init__(self, vectors):
         self.vectors = vectors
+        self.calls = []
 
     def encode(self, texts):
+        self.calls.append(list(texts))
         return np.array([self.vectors.get(text, np.array([0.0, 1.0])) for text in texts])
 
 
@@ -149,6 +153,32 @@ class MultiViewSimilarityTest(unittest.TestCase):
 
         self.assertIn("356 BCE", candidates)
         self.assertIn("356", candidates)
+
+    def test_span_level_similarity_reuses_embedding_cache(self):
+        record = {
+            "reference_answer_v2": "Strasbourg",
+            "prediction": "The court is in Strasbourg.",
+            "prediction_answer_span": "Strasbourg",
+            f"similarity_v2_{MODEL_KEY}": 0.1,
+        }
+        model = DummyEmbeddingModel({"Strasbourg": np.array([1.0, 0.0])})
+        cache = EmbeddingCache(model, batch_size=32)
+
+        add_span_level_similarity_scores(
+            [record],
+            embedding_model=model,
+            embedding_model_name=MODEL_NAME,
+            embedding_cache=cache,
+        )
+        calls_after_first_run = len(model.calls)
+        add_span_level_similarity_scores(
+            [record],
+            embedding_model=model,
+            embedding_model_name=MODEL_NAME,
+            embedding_cache=cache,
+        )
+
+        self.assertEqual(len(model.calls), calls_after_first_run)
 
 
 if __name__ == "__main__":

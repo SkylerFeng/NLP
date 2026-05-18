@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import numpy as np
 
-from src.compute_embeddings import BaseEmbeddingModel, compute_text_embeddings
+from src.compute_embeddings import BaseEmbeddingModel, EmbeddingCache, compute_text_embeddings
 
 
 DEFAULT_SPAN_BLEND_WEIGHT = 0.5
@@ -47,6 +47,7 @@ def add_similarity_scores(
     prediction_field: str = "prediction",
     reference_field: str = "ground_truth",
     output_field_prefix: str = "similarity",
+    embedding_cache: EmbeddingCache | None = None,
 ) -> List[Dict]:
     """
     Compute prediction-reference cosine similarity and add it to records.
@@ -58,17 +59,21 @@ def add_similarity_scores(
     predictions = [record.get(prediction_field, "") for record in records]
     references = [record.get(reference_field, "") for record in records]
 
-    prediction_embeddings = compute_text_embeddings(
-        predictions,
-        embedding_model=embedding_model,
-        batch_size=batch_size,
-    )
+    if embedding_cache is None:
+        prediction_embeddings = compute_text_embeddings(
+            predictions,
+            embedding_model=embedding_model,
+            batch_size=batch_size,
+        )
 
-    reference_embeddings = compute_text_embeddings(
-        references,
-        embedding_model=embedding_model,
-        batch_size=batch_size,
-    )
+        reference_embeddings = compute_text_embeddings(
+            references,
+            embedding_model=embedding_model,
+            batch_size=batch_size,
+        )
+    else:
+        prediction_embeddings = embedding_cache.embeddings_for(predictions)
+        reference_embeddings = embedding_cache.embeddings_for(references)
 
     similarities = compute_cosine_similarities(
         prediction_embeddings=prediction_embeddings,

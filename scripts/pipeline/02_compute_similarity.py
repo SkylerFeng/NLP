@@ -6,7 +6,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.append(str(PROJECT_ROOT))
 
 from src.answer_span import add_prediction_answer_spans
-from src.compute_embeddings import create_embedding_model
+from src.compute_embeddings import EmbeddingCache, create_embedding_model
 from src.compute_similarity import (
     DEFAULT_SPAN_BLEND_WEIGHT,
     add_blended_similarity_scores,
@@ -160,6 +160,10 @@ def main() -> None:
         print(f"Computing similarity with embedding model: {model_name}")
 
         embedding_model = create_embedding_model(model_name)
+        embedding_cache = EmbeddingCache(
+            embedding_model=embedding_model,
+            batch_size=batch_size,
+        )
 
         records = add_similarity_scores(
             records=records,
@@ -168,6 +172,7 @@ def main() -> None:
             batch_size=batch_size,
             prediction_field="prediction",
             reference_field=reference_field,
+            embedding_cache=embedding_cache,
         )
         if config["data"]["dataset"] == "nq" and all(
             "reference_answer_v2" in record for record in records
@@ -183,6 +188,7 @@ def main() -> None:
                 prediction_field="prediction",
                 reference_field="reference_answer_v2",
                 output_field_prefix="similarity_v2",
+                embedding_cache=embedding_cache,
             )
             print(f"Computing prediction span similarity with embedding model: {model_name}")
             records = add_similarity_scores(
@@ -193,6 +199,7 @@ def main() -> None:
                 prediction_field="prediction_answer_span",
                 reference_field="reference_answer_v2",
                 output_field_prefix="prediction_span_similarity",
+                embedding_cache=embedding_cache,
             )
             model_key = safe_model_name(model_name)
             records = add_blended_similarity_scores(
@@ -210,6 +217,7 @@ def main() -> None:
                 batch_size=batch_size,
                 reference_field="reference_answer_v2",
                 sentence_similarity_field=f"similarity_v2_{model_key}",
+                embedding_cache=embedding_cache,
             )
             records = add_factual_conflict_adjusted_scores(
                 records,

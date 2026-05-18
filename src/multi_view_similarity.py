@@ -3,7 +3,7 @@ from typing import Dict, Iterable, List
 
 import numpy as np
 
-from src.compute_embeddings import BaseEmbeddingModel, compute_text_embeddings
+from src.compute_embeddings import BaseEmbeddingModel, EmbeddingCache, compute_text_embeddings
 from src.compute_similarity import cosine_similarity
 from src.reference_answer import clean_extracted_answer
 
@@ -229,10 +229,14 @@ def build_embedding_lookup(
     texts: Iterable[str],
     embedding_model: BaseEmbeddingModel,
     batch_size: int,
+    embedding_cache: EmbeddingCache | None = None,
 ) -> Dict[str, np.ndarray]:
     unique_texts = dedupe_candidates(texts, max_candidates=10**9)
     if not unique_texts:
         return {}
+
+    if embedding_cache is not None:
+        return embedding_cache.embedding_lookup(unique_texts)
 
     embeddings = compute_text_embeddings(
         unique_texts,
@@ -256,6 +260,7 @@ def add_span_level_similarity_scores(
     max_span_tokens: int = DEFAULT_MAX_SPAN_TOKENS,
     max_candidates: int = DEFAULT_MAX_CANDIDATES,
     multi_view_span_weight: float = DEFAULT_MULTI_VIEW_SPAN_WEIGHT,
+    embedding_cache: EmbeddingCache | None = None,
 ) -> List[Dict]:
     """
     Add Unit 3 multi-granularity span similarity fields.
@@ -302,6 +307,7 @@ def add_span_level_similarity_scores(
         texts_to_embed,
         embedding_model=embedding_model,
         batch_size=batch_size,
+        embedding_cache=embedding_cache,
     )
 
     output_records = []
