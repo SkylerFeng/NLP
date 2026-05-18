@@ -1,0 +1,289 @@
+\documentclass[11pt]{article}
+
+\usepackage[final]{acl}
+
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\IfFileExists{inconsolata.sty}{\usepackage{inconsolata}}{}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Semantic Similarity in Latent Space for LLM Prediction Evaluation}
+
+\author{
+  Team Members: Che FENG, Yanzhe XIE, Ye GUO \\
+  AIAA 4051 Final Research Project \\
+  Introduction to Natural Language Processing, HKUST(GZ) \\
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This project studies whether embedding-space semantic similarity can be used as an automatic proxy for the correctness of large language model answers in question answering. We build a controlled evaluation workflow that prepares QA datasets, generates model predictions, creates rule-based correctness labels, computes MiniLM and BGE cosine similarities, evaluates threshold-based correctness prediction, and extracts failure cases for manual analysis. Across four datasets, similarity is highly predictive for short-answer QA, reaching ROC--AUC values of 0.962--0.990 on SciQ and SimpleQuestions-Wiki. However, the original Natural Questions setting fails because short model predictions are compared against long Wikipedia evidence passages, producing inverted or weak similarity signals. Manual failure analysis shows that many errors arise from topical relatedness, answer granularity mismatch, and automatic-label artifacts. This motivates our main optimization: we convert long-form NQ references into concise answer-like references before labeling and embedding comparison. The reference-extraction strategy improves NQ ROC--AUC from 0.269/0.391 to 0.705/0.711 for MiniLM/BGE on the same 500-example subset. These results do not show that embedding similarity is a universal correctness evaluator; rather, they show that it is reliable only when prediction and reference are aligned as comparable answer units.
+\end{abstract}
+
+\section{Introduction}
+
+Automatic evaluation of free-form QA predictions is difficult because surface-form matching often underestimates correct paraphrases, aliases, and semantically equivalent answers. Embedding similarity offers an appealing alternative: if a predicted answer and a reference answer are close in latent semantic space, the prediction may be treated as correct. The key question is whether this intuition remains reliable across different answer formats.
+
+This report evaluates that idea for both short-form and long-form QA. Our central question is:
+\begin{quote}
+Can cosine similarity between prediction and reference embeddings serve as a reliable proxy for QA correctness?
+\end{quote}
+
+The contribution is diagnostic rather than a new embedding model. We make three linked claims. First, embedding similarity is a strong proxy for automatic correctness on short-answer QA, where prediction and reference have similar granularity. Second, the same metric can fail on long-reference QA because it measures topic overlap rather than answer equivalence. Third, reference preparation is a key design decision: converting long evidence passages into concise answer-like references recovers much of the lost signal on NQ. The rest of the report is organized around testing these claims rather than presenting the workflow as an end in itself.
+
+\section{Methodology}
+
+\subsection{Evaluation Workflow}
+
+Given a question $q$, a reference answer $r$, and an LLM prediction $p$, we compute an embedding similarity score
+\begin{equation}
+s_m(p,r) =
+\frac{E_m(p) \cdot E_m(r)}
+{\lVert E_m(p) \rVert \lVert E_m(r) \rVert},
+\end{equation}
+where $E_m$ is an embedding model. We use two sentence embedding models: MiniLM and BGE, following the broader sentence-embedding evaluation setting introduced by Sentence-BERT-style encoders \citep{reimers-gurevych-2019-sentencebert}.
+
+The core system is organized as a staged evaluation workflow:
+\begin{enumerate}
+    \item \textbf{Prediction generation.} Teacher-provided records are normalized into a common question-answer format. Qwen2.5-7B-Instruct then generates one prediction for each question using dataset-specific concise-answer prompts.
+    \item \textbf{Correctness labeling and similarity computation.} The system prepares the evaluation reference, assigns an automatic correctness label, encodes prediction-reference pairs with MiniLM and BGE, and computes cosine similarity scores.
+    \item \textbf{Metric evaluation and failure extraction.} Each similarity score is treated as a threshold-based correctness signal. We report fixed-threshold and best-threshold metrics, compute correct-vs-incorrect similarity gaps, and collect representative failure cases.
+    \item \textbf{Visualization.} The workflow produces similarity distributions, ROC curves, precision-recall curves, and similarity--token-F1 correlation plots.
+\end{enumerate}
+
+This staged design keeps the experiment reproducible: each step produces explicit intermediate outputs, and later steps consume those saved outputs rather than relying on hidden state.
+
+\subsection{Automatic Correctness Labels}
+
+Correctness is represented by a rule-based automatic label, not a human annotation. It combines exact match, token overlap/F1, ground-truth containment, and for long-form settings a prediction-in-reference containment check. These labels provide a reproducible reference signal for threshold evaluation, but they are imperfect: they can reject valid paraphrases and aliases, especially in open-ended or long-form settings. This limitation is important for interpreting the results: our metrics measure how well similarity agrees with an automatic correctness proxy, while failure analysis identifies where that proxy itself is noisy.
+
+\subsection{Reference Preparation}
+
+The default reference is the teacher-provided correct answer. For short-form datasets this is usually already a compact answer span. During development, however, we found that Natural Questions stores long Wikipedia evidence passages as references. Comparing a concise prediction such as ``Zambezi River'' with an entire passage about Victoria Falls makes cosine similarity measure broad topical relatedness rather than answer equivalence.
+
+To address this, we add an evaluation-reference preparation step. For NQ, the system selects a relevant evidence sentence using question-token overlap and question type, then applies lightweight rules for \textit{who}, \textit{when}, \textit{where}, and numeric questions to extract a concise answer-like reference. The extracted reference is stored together with its supporting evidence, so the transformation remains auditable.
+This transformation is applied to the evaluation reference only. The question, generated prediction, embedding model, and downstream metrics are kept fixed, which lets the NQ experiment isolate the effect of reference granularity.
+
+\subsection{Similarity Decision}
+
+For each embedding model, a similarity-based classifier predicts correctness by thresholding cosine similarity. We report fixed-threshold F1, best-threshold F1, and ROC--AUC. We also compute the similarity gap:
+\begin{equation}
+\Delta = \mathbb{E}[s(p,r) \mid y=1] -
+\mathbb{E}[s(p,r) \mid y=0],
+\end{equation}
+where $y$ is the automatic correctness label. A positive gap means automatically correct answers are more similar to references than incorrect answers.
+
+\section{Experiments}
+
+\subsection{Datasets}
+
+We evaluate on two short-form QA datasets and two long-form/open-ended datasets: SciQ \citep{welbl-etal-2017-sciq}, SimpleQuestions-Wiki \citep{bordes-etal-2015-simplequestions}, Natural Questions \citep{kwiatkowski-etal-2019-natural}, and TruthfulQA \citep{lin-etal-2022-truthfulqa}. Table~\ref{tab:datasets} summarizes the processed evaluation sets.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & $N$ & Correct & Pred. tok. & Ref. tok. \\
+\midrule
+SciQ & 500 & 60.6\% & 1.8 & 1.5 \\
+SimpleQ-Wiki & 500 & 18.4\% & 2.1 & 1.8 \\
+NQ original & 5000 & 3.7\% & 11.6 & 100.3 \\
+NQ extracted & 500 & 9.6\% & 11.6 & 11.4 \\
+TruthfulQA & 500 & 8.2\% & 13.0 & 9.6 \\
+\bottomrule
+\end{tabular}
+\caption{Dataset statistics from the saved experiments. Auto-correct rates come from the project's automatic correctness labels, not from human relabeling. For NQ extracted, reference tokens are computed from the extracted answer-like references; for the other rows they are computed from the original reference field.}
+\label{tab:datasets}
+\end{table}
+
+The most important dataset property is reference granularity. SciQ and SimpleQuestions-Wiki usually provide short answer spans, so the compared texts are similar in length and function. Natural Questions (NQ), in contrast, originally compares short predictions with long Wikipedia evidence passages. This mismatch is the main source of failure in the original NQ results.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/reference_length_mismatch.pdf}
+\caption{Reference length mismatch across datasets. NQ uses much longer references than the short-form datasets, making raw prediction-reference embedding similarity more likely to capture passage-level topical relatedness rather than answer equivalence.}
+\label{fig:reference-length-mismatch}
+\end{figure}
+
+The optimized NQ setting should therefore be understood as a reference-format transformation: the questions and predictions remain the same, but the evaluation reference is converted from a long-form evidence passage to a short-form answer-like unit. This lets us test whether the poor original NQ result is caused by the embedding model itself or by comparing texts at incompatible granularities.
+
+\subsection{Evaluation Protocol}
+
+For each dataset and embedding model, we evaluate whether cosine similarity can act as a correctness indicator. The primary ranking metric is ROC--AUC, which measures whether correct predictions tend to receive higher similarity scores than incorrect predictions. We also report the best threshold F1 and the mean similarity gap between automatically correct and incorrect predictions. A positive gap indicates that similarity is aligned with correctness, while a negative gap indicates that the signal is inverted.
+
+The main fairness control is the NQ same-subset comparison. The larger original NQ run establishes the failure mode at scale, but the causal before/after claim uses the same 500 questions and predictions, changing only the reference representation. We also compare the embedding signal against simple lexical signals during analysis. These lexical signals are useful sanity checks, but they are not treated as independent human-level baselines because the automatic correctness labels themselves partially rely on exact match, containment, and token overlap.
+
+\section{Results and Analysis}
+
+\subsection{Main Results}
+
+Table~\ref{tab:main-results} reports the main embedding-similarity results. Short-answer datasets show strong separation between automatically correct and incorrect predictions. On SciQ, MiniLM and BGE achieve ROC--AUC scores of 0.962 and 0.964. On SimpleQuestions-Wiki, they reach 0.987 and 0.990. These results support the hypothesis that embedding similarity is a useful correctness indicator when prediction and reference are comparable answer spans. The interpretation should remain tied to the label source: the reported scores measure agreement with automatic correctness labels, not direct agreement with exhaustive human judgments.
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llrrrrrr}
+\toprule
+Dataset & Type & MiniLM AUC & BGE AUC & MiniLM F1 & BGE F1 & MiniLM gap & BGE gap \\
+\midrule
+NQ original & long & 0.276 & 0.381 & 0.072 & 0.072 & -0.157 & -0.042 \\
+SciQ & short & 0.962 & 0.964 & 0.901 & 0.913 & 0.455 & 0.268 \\
+SimpleQ-Wiki & short & 0.987 & 0.990 & 0.892 & 0.934 & 0.576 & 0.430 \\
+TruthfulQA & long & 0.852 & 0.903 & 0.551 & 0.549 & 0.300 & 0.216 \\
+NQ extracted & long & 0.705 & 0.711 & 0.282 & 0.286 & 0.195 & 0.128 \\
+\bottomrule
+\end{tabular}
+\caption{Main results from saved experiments. F1 is the best F1 after threshold search. NQ original uses long passage references; NQ extracted uses concise answer-like references.}
+\label{tab:main-results}
+\end{table*}
+
+The original NQ setting is the main negative case. The gap is negative for both embedding models, which means automatically incorrect predictions are, on average, more similar to the long reference passages than automatically correct predictions. This confirms that raw embedding similarity can reward topical overlap rather than answer correctness when the reference is a long evidence passage. In other words, the problem is not only threshold selection; the score distribution itself is inverted because the compared texts do not represent the same semantic unit.
+
+TruthfulQA is more open-ended than SciQ and SimpleQuestions-Wiki, but its average reference length is much shorter than NQ. Its ROC--AUC values remain useful, especially for BGE at 0.903, although best-threshold F1 is lower because the automatic positive class is small.
+
+\subsection{NQ Reference Extraction Analysis}
+
+The main optimization implemented after the first round of experiments is NQ-specific reference extraction. Instead of embedding the full evidence passage, the workflow extracts a shorter answer-like reference before labeling and similarity computation. Conceptually, this converts the long-form NQ reference into a short-form evaluation unit, making the comparison closer to the short-form datasets where similarity already works well. This is best understood as an ablation over reference representation rather than an improvement to the embedding model itself.
+
+The extraction process has three steps. First, the passage is split into candidate sentences, and the best evidence sentence is selected using overlap with question content words plus bonuses for question-type cues such as dates or named entities. Second, the question is classified into coarse types: \textit{who}, \textit{when}, \textit{where}, numeric, or general. Third, type-specific regular-expression rules extract people/entities, dates, locations, or numeric expressions. If no compact span is found, the system falls back to a truncated evidence sentence. This heuristic design is intentionally lightweight and reproducible; it does not require another LLM call or supervised training data.
+
+Table~\ref{tab:nq-improvement} compares original passage references with extracted references on the same 500-example subset. This gives a fair before/after view separate from the larger 5000-example original NQ run. The improvement is large for both embedding models: MiniLM improves from 0.269 to 0.705 ROC--AUC, and BGE improves from 0.391 to 0.711.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Model & AUC$_b$ & AUC$_a$ & Gap$_b$ & Gap$_a$ \\
+\midrule
+MiniLM & 0.269 & 0.705 & -0.149 & 0.195 \\
+BGE & 0.391 & 0.711 & -0.031 & 0.128 \\
+\bottomrule
+\end{tabular}
+\caption{Effect of NQ reference extraction on the same 500-example subset. Subscripts $b$ and $a$ indicate before and after extraction.}
+\label{tab:nq-improvement}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/roc_auc_nq_reference_extraction.pdf}
+\caption{NQ ROC--AUC before and after reference extraction on the same 500-example subset. Converting long passage references into concise answer-like references substantially improves both embedding models.}
+\label{fig:nq-reference-extraction-auc}
+\end{figure}
+
+This result supports the main diagnosis: similarity evaluation works better when prediction and reference are comparable answer units. The improvement changes the signal direction from negative to positive for both embedding models. Extraction does not solve all remaining errors. After extraction, high-similarity wrong cases still include related-but-wrong answers and cases requiring entailment or answer-type checks, but the embedding score becomes a meaningful screening signal rather than an inverted one.
+
+\subsection{Failure Analysis}
+
+We define a similarity failure as a disagreement between the thresholded similarity decision and the automatic correctness label. We inspect two directions:
+\begin{itemize}
+    \item \textbf{High-similarity wrong}: the prediction is automatically labeled incorrect but receives a high similarity score.
+    \item \textbf{Low-similarity correct}: the prediction is automatically labeled correct but receives a low similarity score.
+\end{itemize}
+
+Manual annotation separates true limitations of embedding similarity from artifacts caused by strict automatic labels. Table~\ref{tab:manual-categories} summarizes the aggregate manual categories.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lr}
+\toprule
+Manual category & Count \\
+\midrule
+Semantic similarity limitation & 172 \\
+Low-similarity false negative & 78 \\
+Automatic label artifact & 66 \\
+\bottomrule
+\end{tabular}
+\caption{Aggregate manual annotation categories over sampled failure cases.}
+\label{tab:manual-categories}
+\end{table}
+
+The categories are important because they separate method failure from evaluation noise. When an answer is semantically related but factually wrong, the limitation belongs to embedding similarity: the metric lacks entailment and answer-type reasoning. When an acceptable alias or paraphrase is rejected by the rule-based label, the failure belongs partly to the automatic supervision signal. This distinction prevents over-claiming both directions: similarity is not a complete correctness judge, but some apparent errors are caused by imperfect labels rather than by the embedding model.
+
+\subsubsection{Observed Failure Modes}
+
+\textbf{Topic relatedness from long passages.}
+This is dominant in original NQ. The prediction and reference passage are often about the same entity or event, so the embedding score is high even when the prediction does not answer the question correctly.
+
+\textbf{Related but wrong answers.}
+Some predictions are semantically close to the gold answer but differ in relation, entity, or required specificity. Embedding similarity captures neighborhood relatedness but not task-specific correctness.
+
+\textbf{Granularity mismatch.}
+Under-specific or over-specific answers can receive high similarity, even when QA correctness requires an exact answer type or level of detail.
+
+\textbf{Label artifacts.}
+Automatic rules sometimes mark acceptable paraphrases, aliases, date variants, or numeric equivalents as incorrect. These cases are not pure embedding failures; they reveal label noise in the automatic reference signal.
+
+\textbf{Context dilution.}
+Correct predictions can receive low similarity when the answer is surrounded by extra generated context, or when the reference is a long passage that dilutes the answer-bearing span.
+
+\subsection{Improvement Roadmap}
+
+Beyond the implemented NQ extraction strategy, the failure analysis suggests several future improvements.
+
+\textbf{Human-annotated calibration.}
+The manually labeled failure sample can be used as a small calibration set for threshold tuning and label-noise analysis. This directly addresses cases where automatic labels are stricter than human judgment.
+
+\textbf{Answer normalization.}
+Preprocessing can canonicalize aliases, dates, numbers, units, casing, punctuation, and answer spans before similarity scoring.
+
+\textbf{Bidirectional extraction.}
+NQ extraction currently repairs references. A more general system could extract concise answer candidates from both predictions and references.
+
+\textbf{Hybrid scoring.}
+Embedding similarity can be combined with token F1, containment, entity overlap, answer-type agreement, and other structured overlap signals.
+
+\textbf{Dataset-specific thresholds.}
+Short-form and long-form datasets have different similarity distributions, so a single global threshold is unlikely to be optimal.
+
+\textbf{NLI or LLM verifier.}
+An entailment layer can distinguish semantic relatedness from actual answer correctness, especially for high-similarity wrong cases.
+
+\subsection{Summary of Findings}
+
+Embedding similarity is a strong correctness signal when the prediction and reference are comparable answer units. It works especially well for short-form QA, where references are compact answer spans. The experiments also show a clear boundary condition: cosine similarity can fail badly when the reference is a long evidence passage rather than an answer. The original NQ setup demonstrates this failure because long passages make incorrect answers appear semantically related. The implemented reference-extraction strategy substantially improves the signal, showing that reference granularity is a first-order factor in similarity-based QA evaluation.
+
+\subsection{Limitations}
+
+The main limitation is the supervision signal. Automatic correctness labels make the study reproducible, but they are not a substitute for human annotation, and some lexical baselines are partly entangled with the rules used to create those labels. A stronger version of this study would include a held-out human-labeled subset for threshold selection and final evaluation.
+
+The NQ improvement is also limited in scope. The main table reports the full original NQ run with 5000 examples and the extracted-reference NQ run with 500 examples; Table~\ref{tab:nq-improvement} provides the fair same-subset comparison used for the causal claim. The extraction rules are heuristic, designed for NQ-style passages, and should not be assumed to transfer directly to all long-form QA datasets. Finally, best-threshold F1 is tuned on the available evaluation data. For deployment, thresholds should be selected on a separate validation split and tested on unseen data.
+
+\begin{thebibliography}{9}
+
+\bibitem[Bordes et~al.(2015)]{bordes-etal-2015-simplequestions}
+Antoine Bordes, Nicolas Usunier, Sumit Chopra, and Jason Weston. 2015.
+Large-scale simple question answering with memory networks.
+
+\bibitem[Kwiatkowski et~al.(2019)]{kwiatkowski-etal-2019-natural}
+Tom Kwiatkowski, Jennimaria Palomaki, Olivia Redfield, Michael Collins, Ankur Parikh,
+Chris Alberti, Danielle Epstein, Illia Polosukhin, Jacob Devlin, Kenton Lee, and others. 2019.
+Natural Questions: A benchmark for question answering research.
+
+\bibitem[Lin et~al.(2022)]{lin-etal-2022-truthfulqa}
+Stephanie Lin, Jacob Hilton, and Owain Evans. 2022.
+TruthfulQA: Measuring how models mimic human falsehoods.
+
+\bibitem[Reimers and Gurevych(2019)]{reimers-gurevych-2019-sentencebert}
+Nils Reimers and Iryna Gurevych. 2019.
+Sentence-BERT: Sentence embeddings using Siamese BERT-networks.
+
+\bibitem[Welbl et~al.(2017)]{welbl-etal-2017-sciq}
+Johannes Welbl, Nelson F. Liu, and Matt Gardner. 2017.
+Crowdsourcing multiple choice science questions.
+
+\end{thebibliography}
+
+\end{document}

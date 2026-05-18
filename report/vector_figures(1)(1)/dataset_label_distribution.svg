@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500">
+<title>Datasets and Automatic Label Distribution</title>
+<rect width="1000" height="500" fill="#f5f7fa"/>
+<rect x="18" y="18" width="964" height="464" rx="10" fill="#ffffff" stroke="#cfd8e0"/>
+<text x="500.0" y="52" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#00467f">Datasets and Automatic Label Distribution</text>
+<line x1="110" y1="378" x2="930" y2="378" stroke="#242a32" stroke-width="2"/>
+<line x1="110" y1="88" x2="110" y2="378" stroke="#242a32" stroke-width="2"/>
+<line x1="110" y1="378.0" x2="930" y2="378.0" stroke="#cfd8e0" stroke-width="1"/>
+<text x="98" y="383.0" text-anchor="end" font-family="Arial" font-size="16" fill="#242a32">0</text>
+<line x1="110" y1="320.0" x2="930" y2="320.0" stroke="#cfd8e0" stroke-width="1"/>
+<text x="98" y="325.0" text-anchor="end" font-family="Arial" font-size="16" fill="#242a32">1000</text>
+<line x1="110" y1="262.0" x2="930" y2="262.0" stroke="#cfd8e0" stroke-width="1"/>
+<text x="98" y="267.0" text-anchor="end" font-family="Arial" font-size="16" fill="#242a32">2000</text>
+<line x1="110" y1="204.0" x2="930" y2="204.0" stroke="#cfd8e0" stroke-width="1"/>
+<text x="98" y="209.0" text-anchor="end" font-family="Arial" font-size="16" fill="#242a32">3000</text>
+<line x1="110" y1="146.0" x2="930" y2="146.0" stroke="#cfd8e0" stroke-width="1"/>
+<text x="98" y="151.0" text-anchor="end" font-family="Arial" font-size="16" fill="#242a32">4000</text>
+<line x1="110" y1="88.0" x2="930" y2="88.0" stroke="#cfd8e0" stroke-width="1"/>
+<text x="98" y="93.0" text-anchor="end" font-family="Arial" font-size="16" fill="#242a32">5000</text>
+<text x="30" y="233.0" text-anchor="middle" font-family="Arial" font-size="18" fill="#242a32" transform="rotate(-90 30 233.0)">Records</text>
+<rect x="165.0" y="360.426" width="95" height="17.574" fill="#25875c"/>
+<rect x="165.0" y="349.0" width="95" height="11.426" fill="#be4037"/>
+<text x="212.5" y="412" text-anchor="middle" font-family="Arial" font-size="18" fill="#242a32">SciQ</text>
+<rect x="370.0" y="372.664" width="95" height="5.336" fill="#25875c"/>
+<rect x="370.0" y="349.0" width="95" height="23.664" fill="#be4037"/>
+<text x="417.5" y="412" text-anchor="middle" font-family="Arial" font-size="18" fill="#242a32">SimpleQ</text>
+<rect x="575.0" y="367.212" width="95" height="10.788" fill="#25875c"/>
+<rect x="575.0" y="88.0" width="95" height="279.212" fill="#be4037"/>
+<text x="622.5" y="412" text-anchor="middle" font-family="Arial" font-size="18" fill="#242a32">NQ</text>
+<rect x="780.0" y="375.622" width="95" height="2.378" fill="#25875c"/>
+<rect x="780.0" y="349.0" width="95" height="26.622" fill="#be4037"/>
+<text x="827.5" y="412" text-anchor="middle" font-family="Arial" font-size="18" fill="#242a32">TruthfulQA</text>
+<rect x="360" y="450" width="24" height="16" fill="#25875c"/>
+<text x="392" y="464" font-family="Arial" font-size="18" fill="#242a32">auto-correct</text>
+<rect x="540" y="450" width="24" height="16" fill="#be4037"/>
+<text x="572" y="464" font-family="Arial" font-size="18" fill="#242a32">auto-incorrect</text>
+</svg>

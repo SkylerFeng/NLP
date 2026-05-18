@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390">
+<title>Failure Analysis: What the Errors Mean</title>
+<rect width="1000" height="390" fill="#f5f7fa"/>
+<rect x="18" y="18" width="964" height="354" rx="10" fill="#ffffff" stroke="#cfd8e0"/>
+<text x="500.0" y="52" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#00467f">Failure Analysis: What the Errors Mean</text>
+<rect x="55" y="110" width="200" height="92" rx="8" fill="#fbefee" stroke="#be4037" stroke-width="3"/>
+<text x="155" y="148" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Topic overlap</text>
+<text x="155" y="176" text-anchor="middle" font-family="Arial" font-size="15" fill="#242a32">same passage topic</text>
+<rect x="285" y="110" width="200" height="92" rx="8" fill="#fbf5e9" stroke="#c78a20" stroke-width="3"/>
+<text x="385" y="148" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Granularity</text>
+<text x="385" y="176" text-anchor="middle" font-family="Arial" font-size="15" fill="#242a32">too broad / specific</text>
+<rect x="515" y="110" width="200" height="92" rx="8" fill="#f3eff8" stroke="#6f539d" stroke-width="3"/>
+<text x="615" y="148" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Label artifact</text>
+<text x="615" y="176" text-anchor="middle" font-family="Arial" font-size="15" fill="#242a32">alias or paraphrase</text>
+<rect x="745" y="110" width="200" height="92" rx="8" fill="#e9f6f6" stroke="#006f73" stroke-width="3"/>
+<text x="845" y="148" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Context dilution</text>
+<text x="845" y="176" text-anchor="middle" font-family="Arial" font-size="15" fill="#242a32">answer hidden in text</text>
+<text x="95" y="250" font-family="Arial" font-size="18" font-weight="700" fill="#00467f">High-sim wrong</text>
+<text x="270" y="250" font-family="Arial" font-size="18" fill="#242a32">topical relatedness, long passages, or semantically close but incorrect answers</text>
+<text x="95" y="288" font-family="Arial" font-size="18" font-weight="700" fill="#00467f">Low-sim correct</text>
+<text x="270" y="288" font-family="Arial" font-size="18" fill="#242a32">short-answer vs long-context mismatch or extra generated context</text>
+<text x="95" y="326" font-family="Arial" font-size="18" font-weight="700" fill="#00467f">Label artifact</text>
+<text x="270" y="326" font-family="Arial" font-size="18" fill="#242a32">automatic rules stricter than human judgment for aliases and paraphrases</text>
+</svg>
