@@ -5,7 +5,7 @@ project:
   # This prevents writing SciQ outputs into an NQ result folder.
   auto_paths: true
   # If true, similarity/evaluation artifacts are written under
-  # results_<dataset>_<sample>/runs/<run_id>/ instead of overwriting prior runs.
+  # outputs/experiments/results_<dataset>_<sample>/runs/<run_id>/ instead of overwriting prior runs.
   preserve_runs: true
   # auto creates a new run for similarity computation and makes evaluation use
   # the latest completed run. Set a fixed value to intentionally rerun one run.
@@ -20,15 +20,15 @@ data:
   dataset: sciq
 
   # 老师给的数据目录
-  data_root: processed_data
+  data_root: data/raw
   data_file: merged_fb.json
 
   # 如果只想先测试，可以设置 sample_size: 20
   # 如果想跑全量，改成 null
   sample_size: 500
 
-  prediction_dir: data/predictions
-  similarity_dir: data/similarity
+  prediction_dir: data/interim/predictions
+  similarity_dir: data/interim/similarity
 
 llm:
   provider: qwen
@@ -42,9 +42,9 @@ llm:
 
 prediction:
   # These path fields are auto-filled when project.auto_paths is true.
-  input_file: processed_data/sciq/merged_fb.json
+  input_file: data/raw/sciq/merged_fb.json
 
-  output_file: data/predictions/sciq_qwen25_7b_instruct_predictions_5000.jsonl
+  output_file: data/interim/predictions/sciq_qwen25_7b_instruct_predictions_500.jsonl
 
   use_support: false
 
@@ -55,19 +55,20 @@ embedding:
   batch_size: 32
 
 similarity:
-  input_file: data/predictions/sciq_qwen25_7b_instruct_predictions_5000.jsonl
-  output_file: data/similarity/sciq_qwen25_7b_instruct_similarity_5000.jsonl
+  input_file: data/interim/predictions/sciq_qwen25_7b_instruct_predictions_500.jsonl
+  output_file: data/interim/similarity/sciq_qwen25_7b_instruct_similarity_500.jsonl
 
 evaluation:
-  input_file: data/similarity/sciq_qwen25_7b_instruct_similarity_5000.jsonl
+  input_file: data/interim/similarity/sciq_qwen25_7b_instruct_similarity_500.jsonl
   similarity_threshold: 0.75
   label_field: correct_label
   # auto uses reference_answer for NQ and ground_truth for other datasets.
   reference_field: auto
 
 output:
-  results_dir: results_sciq_5000
-  figure_dir: results_sciq_5000/figures
-  table_dir: results_sciq_5000/tables
-  failure_case_dir: results_sciq_5000/failure_cases
-  report_asset_dir: results_sciq_5000/report_assets
+  experiments_dir: outputs/experiments
+  results_dir: outputs/experiments/results_sciq_500
+  figure_dir: outputs/experiments/results_sciq_500/figures
+  table_dir: outputs/experiments/results_sciq_500/tables
+  failure_case_dir: outputs/experiments/results_sciq_500/failure_cases
+  report_asset_dir: outputs/experiments/results_sciq_500/report_assets

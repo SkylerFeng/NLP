@@ -16,9 +16,10 @@ def base_config() -> dict:
         "data": {
             "dataset": "nq",
             "sample_size": 500,
-            "data_root": "processed_data",
+            "data_root": "data/raw",
             "data_file": "merged_fb.json",
-            "prediction_dir": "data/predictions",
+            "prediction_dir": "data/interim/predictions",
+            "similarity_dir": "data/interim/similarity",
         },
         "llm": {"run_name": "qwen25_7b_instruct"},
         "prediction": {},
@@ -35,16 +36,16 @@ class ConfigPathResolutionTest(unittest.TestCase):
         self.assertEqual(config["project"]["resolved_run_id"], "unit1_check")
         self.assertEqual(
             config["prediction"]["output_file"],
-            "data/predictions/nq_qwen25_7b_instruct_predictions_500.jsonl",
+            "data/interim/predictions/nq_qwen25_7b_instruct_predictions_500.jsonl",
         )
         self.assertEqual(
             config["similarity"]["output_file"],
-            "results_nq_500/runs/unit1_check/similarity/"
+            "outputs/experiments/results_nq_500/runs/unit1_check/similarity/"
             "nq_qwen25_7b_instruct_similarity_500.jsonl",
         )
         self.assertEqual(
             config["output"]["table_dir"],
-            "results_nq_500/runs/unit1_check/tables",
+            "outputs/experiments/results_nq_500/runs/unit1_check/tables",
         )
 
     def test_evaluation_uses_latest_run_marker_when_run_id_is_auto(self):
@@ -52,8 +53,8 @@ class ConfigPathResolutionTest(unittest.TestCase):
             original_cwd = os.getcwd()
             os.chdir(tmpdir)
             try:
-                marker_dir = Path("results_nq_500")
-                marker_dir.mkdir()
+                marker_dir = Path("outputs/experiments/results_nq_500")
+                marker_dir.mkdir(parents=True)
                 (marker_dir / "latest_run_id.txt").write_text(
                     "latest_unit1\n",
                     encoding="utf-8",
@@ -67,7 +68,7 @@ class ConfigPathResolutionTest(unittest.TestCase):
 
         self.assertEqual(resolved["project"]["resolved_run_id"], "latest_unit1")
         self.assertIn(
-            "results_nq_500/runs/latest_unit1/similarity/",
+            "outputs/experiments/results_nq_500/runs/latest_unit1/similarity/",
             resolved["evaluation"]["input_file"],
         )
 
@@ -77,7 +78,7 @@ class ConfigPathResolutionTest(unittest.TestCase):
             os.chdir(tmpdir)
             try:
                 legacy_similarity = Path(
-                    "data/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl"
+                    "data/interim/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl"
                 )
                 legacy_similarity.parent.mkdir(parents=True)
                 legacy_similarity.write_text("", encoding="utf-8")
@@ -90,9 +91,9 @@ class ConfigPathResolutionTest(unittest.TestCase):
 
         self.assertEqual(
             resolved["evaluation"]["input_file"],
-            "data/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl",
+            "data/interim/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl",
         )
-        self.assertIn("results_nq_500/runs/", resolved["output"]["table_dir"])
+        self.assertIn("outputs/experiments/results_nq_500/runs/", resolved["output"]["table_dir"])
 
     def test_preserve_runs_can_be_disabled_for_legacy_paths(self):
         config = base_config()
@@ -103,9 +104,9 @@ class ConfigPathResolutionTest(unittest.TestCase):
         self.assertNotIn("resolved_run_id", resolved["project"])
         self.assertEqual(
             resolved["similarity"]["output_file"],
-            "data/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl",
+            "data/interim/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl",
         )
-        self.assertEqual(resolved["output"]["table_dir"], "results_nq_500/tables")
+        self.assertEqual(resolved["output"]["table_dir"], "outputs/experiments/results_nq_500/tables")
 
     def test_prediction_stage_keeps_reusable_legacy_paths(self):
         resolved = resolve_config(base_config(), stage="prediction")
@@ -113,11 +114,11 @@ class ConfigPathResolutionTest(unittest.TestCase):
         self.assertNotIn("resolved_run_id", resolved["project"])
         self.assertEqual(
             resolved["prediction"]["output_file"],
-            "data/predictions/nq_qwen25_7b_instruct_predictions_500.jsonl",
+            "data/interim/predictions/nq_qwen25_7b_instruct_predictions_500.jsonl",
         )
         self.assertEqual(
             resolved["similarity"]["output_file"],
-            "data/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl",
+            "data/interim/similarity/nq_qwen25_7b_instruct_similarity_500.jsonl",
         )
 
 

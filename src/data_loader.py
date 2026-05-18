@@ -14,14 +14,14 @@ SUPPORTED_DATASETS = {
 
 def load_teacher_processed_dataset(
     dataset_name: str,
-    data_root: str = "processed_data",
+    data_root: str = "data/raw",
     filename: str = "merged_fb.json",
 ) -> List[Dict]:
     """
     Load teacher-provided processed QA dataset.
 
     Expected path:
-        processed_data/{dataset_name}/merged_fb.json
+        data/raw/{dataset_name}/merged_fb.json
 
     Expected JSONL format:
         {"question": "...", "correct_answer": "..."}

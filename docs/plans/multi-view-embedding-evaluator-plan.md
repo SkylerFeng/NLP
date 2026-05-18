@@ -25,10 +25,10 @@ The goal is not to change the ground-truth answer itself. The goal is to make th
 
 Primary scope:
 
-- Dataset: `results_nq_500`.
+- Dataset: `outputs/experiments/results_nq_500`.
 - Models: `sentence-transformers/all-MiniLM-L6-v2` and `BAAI/bge-base-en-v1.5`.
-- Inputs: existing prediction and similarity files under `data/` and `results_nq_500/`.
-- Audit data: existing `failures_analysis_and_improvement/summary_tables/manual_annotation_sample.csv`, used for qualitative failure analysis unless a binary human-label contract is added.
+- Inputs: existing prediction and similarity files under `data/interim/` and `outputs/experiments/results_nq_500/`.
+- Audit data: existing `outputs/analysis/failures_analysis_and_improvement/summary_tables/manual_annotation_sample.csv`, used for qualitative failure analysis unless a binary human-label contract is added.
 
 Non-goals:
 
@@ -57,7 +57,7 @@ This preserves the academic focus on embedding latent space while addressing kno
 
 | Failure type | Current evidence | Root cause | Needed fix |
 | --- | --- | --- | --- |
-| `low_similarity_correct` | MiniLM 24, BGE 5 in `results_nq_500` | Short reference answer is diluted by full prediction sentence embedding | Prediction answer-span extraction and span-level max similarity |
+| `low_similarity_correct` | MiniLM 24, BGE 5 in `outputs/experiments/results_nq_500` | Short reference answer is diluted by full prediction sentence embedding | Prediction answer-span extraction and span-level max similarity |
 | `high_similarity_wrong` with numeric/date/entity mismatch | BGE 31, MiniLM 11 | Embedding captures topic but not exact factual units | Entity/number/date-aware features and conflict penalties |
 | Reference extraction artifact | Pronoun refs such as `He`, `It`, `This`; one-token suspicious refs | Heuristic extraction accepts non-informative spans | Reference validation and fallback extraction |
 | Automatic-label artifact | Correct paraphrases labeled 0 by exact/containment/token-F1 | `correct_label` is too strict for paraphrase and ordering | Human-audited subset reporting and label-change audit |
@@ -83,7 +83,7 @@ This preserves the academic focus on embedding latent space while addressing kno
 
 5. Keep the baseline and v2 artifacts separate.
 
-   Rationale: `scripts/02_compute_similarity.py` currently uses one reference field for both `correct_label` and embedding similarity. V2 reference changes can otherwise silently change both the target label and the score, making ablations incomparable.
+   Rationale: `scripts/pipeline/02_compute_similarity.py` currently uses one reference field for both `correct_label` and embedding similarity. V2 reference changes can otherwise silently change both the target label and the score, making ablations incomparable.
 
 ## Artifact Contract
 
@@ -122,8 +122,8 @@ Required comparison rule:
 
 Files:
 
-- `scripts/02_compute_similarity.py`
-- `scripts/03_evaluate.py`
+- `scripts/pipeline/02_compute_similarity.py`
+- `scripts/pipeline/03_evaluate.py`
 - `src/evaluate.py`
 - `tests/test_evaluate.py`
 
@@ -261,7 +261,7 @@ Files:
 
 - New: `src/multi_view_similarity.py`
 - `src/compute_similarity.py`
-- `scripts/02_compute_similarity.py`
+- `scripts/pipeline/02_compute_similarity.py`
 - `tests/test_multi_view_similarity.py`
 
 Add features per embedding model:
@@ -366,7 +366,7 @@ Experiment gate:
 
 Implementation note, 2026-05-09:
 
-- Unit 4 is implemented in run `results_nq_500/runs/unit4_check`.
+- Unit 4 is implemented in run `outputs/experiments/results_nq_500/runs/unit4_check`.
 - BGE `factual_conflict_adjusted_multi_view_score` improved PR-AUC from `0.4928` to `0.5657`, best F1 from `0.5000` to `0.5682`, and reduced high-similarity-wrong from `29` to `14` compared with the Unit 3 conservative multi-view score.
 - BGE `factual_conflict_adjusted_span_max_similarity` improved fixed-threshold F1 from `0.4503` to `0.5419` and reduced high-similarity-wrong from `56` to `25` compared with Unit 3 span-max, while keeping PR-AUC roughly stable/improved from `0.8117` to `0.8181`.
 
@@ -385,7 +385,7 @@ Files:
 
 - `src/multi_view_similarity.py`
 - `src/factual_units.py`
-- `scripts/02_compute_similarity.py`
+- `scripts/pipeline/02_compute_similarity.py`
 
 Add:
 
@@ -437,7 +437,7 @@ Gate decision, 2026-05-09:
 Files:
 
 - `src/evaluate.py`
-- `scripts/03_evaluate.py`
+- `scripts/pipeline/03_evaluate.py`
 - `tests/test_evaluate.py`
 
 Add:
@@ -488,7 +488,7 @@ Experiment gate:
 
 Implementation note, 2026-05-09:
 
-- Unit 6 is implemented in run `results_nq_500/runs/unit6_check`.
+- Unit 6 is implemented in run `outputs/experiments/results_nq_500/runs/unit6_check`.
 - Unit 5 remains skipped, so Unit 6 uses reduced positive weights over sentence similarity, span max similarity, and entity/token overlap, then subtracts the factual conflict penalty.
 - The fixed reduced score improves over the existing BGE hybrid baseline: PR-AUC `0.3468 -> 0.6156`, best F1 `0.3585 -> 0.5618`, and fixed F1 `0.2121 -> 0.5570`.
 - The sensitivity row `span_ranked` (`0.05 sentence + 0.95 span - 0.15 conflict_penalty`) is the strongest Unit 6 ranking setting. For BGE it improves PR-AUC over the best Unit 4 single-feature row from `0.8181` to `0.8454`, with best F1 tied at `0.8125`.
@@ -499,7 +499,7 @@ Implementation note, 2026-05-09:
 
 Files:
 
-- `scripts/03_evaluate.py`
+- `scripts/pipeline/03_evaluate.py`
 - `src/evaluate.py`
 
 Add:
@@ -541,7 +541,7 @@ Experiment gate:
 
 Implementation note, 2026-05-09:
 
-- Unit 7 is implemented in run `results_nq_500/runs/unit7_check`.
+- Unit 7 is implemented in run `outputs/experiments/results_nq_500/runs/unit7_check`.
 - `question_type_metrics.csv` now reports dataset-global rows, question-type rows under the global fixed threshold, and guarded threshold rows with explicit `question_type_cv` or `inherited_global` status.
 - Default calibration guards are `num_examples >= 50`, `num_positive >= 10`, `num_negative >= 10`, nonzero score standard deviation, and 5-fold stratified cross-validation.
 - NQ 500 supports calibrated question-type thresholds for `when`, `where`, and `who`. `definition`, `list`, `number`, and `yes_no` are skipped because `num_examples < 50`; `general` is skipped because `num_positive < 10`.
@@ -603,7 +603,7 @@ Full-dataset results measure agreement with the automatic evaluator. Human-audit
 
 ## Required Output Tables
 
-Extend `scripts/03_evaluate.py` to write:
+Extend `scripts/pipeline/03_evaluate.py` to write:
 
 - `multi_view_ablation_results.csv`.
 - `question_type_metrics.csv`.

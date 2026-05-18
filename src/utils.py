@@ -26,6 +26,10 @@ DATASET_TASK_TYPES = {
 }
 
 LATEST_RUN_FILENAME = "latest_run_id.txt"
+DEFAULT_DATA_ROOT = "data/raw"
+DEFAULT_PREDICTION_DIR = "data/interim/predictions"
+DEFAULT_SIMILARITY_DIR = "data/interim/similarity"
+DEFAULT_EXPERIMENTS_DIR = "outputs/experiments"
 
 
 def set_seed(seed: int) -> None:
@@ -134,11 +138,12 @@ def resolve_config(config: Dict[str, Any], stage: str | None = None) -> Dict[str
         tag = sample_tag(config["data"].get("sample_size"))
         llm_name = slugify(config["llm"].get("run_name") or config["llm"].get("model", "llm"))
 
-        data_root = Path(config["data"].get("data_root", "processed_data"))
+        data_root = Path(config["data"].get("data_root", DEFAULT_DATA_ROOT))
         data_file = config["data"].get("data_file", "merged_fb.json")
-        prediction_dir = Path(config["data"].get("prediction_dir", "data/predictions"))
-        similarity_dir = Path(config["data"].get("similarity_dir", "data/similarity"))
-        results_base_dir = Path(f"results_{dataset}_{tag}")
+        prediction_dir = Path(config["data"].get("prediction_dir", DEFAULT_PREDICTION_DIR))
+        similarity_dir = Path(config["data"].get("similarity_dir", DEFAULT_SIMILARITY_DIR))
+        experiments_dir = Path(config["output"].get("experiments_dir", DEFAULT_EXPERIMENTS_DIR))
+        results_base_dir = experiments_dir / f"results_{dataset}_{tag}"
 
         prediction_file = prediction_dir / f"{dataset}_{llm_name}_predictions_{tag}.jsonl"
         legacy_similarity_file = similarity_dir / f"{dataset}_{llm_name}_similarity_{tag}.jsonl"
@@ -165,11 +170,13 @@ def resolve_config(config: Dict[str, Any], stage: str | None = None) -> Dict[str
             ):
                 similarity_file = legacy_similarity_file
             config["project"]["resolved_run_id"] = run_id
+            config["output"]["experiments_dir"] = str(experiments_dir)
             config["output"]["base_results_dir"] = str(results_base_dir)
         else:
             results_dir = results_base_dir
             similarity_file = legacy_similarity_file
             config["project"].pop("resolved_run_id", None)
+            config["output"]["experiments_dir"] = str(experiments_dir)
             config["output"].pop("base_results_dir", None)
 
         config["prediction"]["input_file"] = str(data_root / dataset / data_file)
@@ -196,7 +203,7 @@ def validate_config(config: Dict[str, Any]) -> None:
         )
 
     expected_input = (
-        Path(config["data"].get("data_root", "processed_data"))
+        Path(config["data"].get("data_root", DEFAULT_DATA_ROOT))
         / dataset
         / config["data"].get("data_file", "merged_fb.json")
     )

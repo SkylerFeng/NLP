@@ -10,7 +10,7 @@ from src.evaluate import (
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-EVALUATE_SCRIPT = PROJECT_ROOT / "scripts" / "03_evaluate.py"
+EVALUATE_SCRIPT = PROJECT_ROOT / "scripts" / "pipeline" / "03_evaluate.py"
 SPEC = importlib.util.spec_from_file_location("evaluate_script", EVALUATE_SCRIPT)
 evaluate_script = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(evaluate_script)

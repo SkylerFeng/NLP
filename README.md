@@ -4,15 +4,16 @@
 
 **快速结论**
 - 本项目的“评估标签”(`correct_label`)由代码生成（参见 `src/correctness_labeling.py`）。
-- 原始数据中的参考答案字段为 `correct_answer`（在加载时会映射为 `ground_truth`），参见 `processed_data/*/merged_fb.json` 和 `src/data_loader.py`。
+- 原始数据中的参考答案字段为 `correct_answer`（在加载时会映射为 `ground_truth`），参见 `data/raw/*/merged_fb.json` 和 `src/data_loader.py`。
 - `config.yaml` 现在默认启用 `project.auto_paths: true`：只需要修改 `data.dataset` 和 `data.sample_size`，输入文件、中间文件、结果目录会自动同步，避免把 SciQ 数据写入 NQ 结果目录。
 - `project.preserve_runs: true` 会把每次 similarity/evaluation 输出保存到独立 run 目录，避免覆盖上一次实验结果。
 
 **目录概览**
-- `processed_data/`：教师提供的原始数据（例如 SciQ），包含 `correct_answer`。
-- `data/predictions/`：LLM 生成的预测 JSONL（脚本 `scripts/01_generate_predictions.py` 输出）。
-- `data/similarity/`：在带有 `correct_label` 的记录上追加 similarity 分数后的输出（脚本 `scripts/02_compute_similarity.py` 输出）。
-- `results*/`：评估结果、失败样例和可视化图表。
+- `data/raw/`：教师提供的原始数据（例如 SciQ），包含 `correct_answer`。
+- `data/interim/predictions/`：LLM 生成的预测 JSONL（脚本 `scripts/pipeline/01_generate_predictions.py` 输出）。
+- `data/interim/similarity/`：在带有 `correct_label` 的记录上追加 similarity 分数后的输出（脚本 `scripts/pipeline/02_compute_similarity.py` 输出）。
+- `outputs/experiments/results_*/`：评估结果、失败样例和可视化图表。
+- `outputs/analysis/failures_analysis_and_improvement/`：Part 4 失败分析、汇总表和报告。
 - `src/`：主要实现模块（embedding / similarity / labeling / evaluate / visualize 等）。
 - `scripts/`：一键运行流水线的脚本。
 
@@ -21,7 +22,7 @@
 - NQ reference 抽取：`src/reference_answer.py` 会为 NQ 从长 Wikipedia evidence passage 中抽取较短的 `reference_answer`，后续打标签、embedding similarity 和 hybrid overlap 默认使用该字段，避免“短预测 vs. 长段落”的表示粒度不匹配。
 - 计算相似度：`src/compute_similarity.py` 中的 `add_similarity_scores` 使用 embedding 模型对 `prediction` 与 evaluation reference 分别做 embedding，并在记录上追加 `similarity_{model_name}` 字段；`threshold_similarity` 可将相似度转成预测标签。
 - 评估：`src/evaluate.py` 使用 `correct_label` 作为真值，比较 similarity-based classifier 与自动标签的表现，并导出失败用例。
-- Baseline / ablation：`scripts/03_evaluate.py` 额外导出 exact match、containment、token F1、entity/token overlap、embedding similarity 和 hybrid score 的对比表。
+- Baseline / ablation：`scripts/pipeline/03_evaluate.py` 额外导出 exact match、containment、token F1、entity/token overlap、embedding similarity 和 hybrid score 的对比表。
 
 **支持的数据集**
 - Short-form QA：`sciq`、`simple_questions_wiki`
@@ -51,36 +52,36 @@ project:
 启用 `auto_paths` 后，路径会自动解析为类似：
 
 ```text
-data/predictions/{dataset}_{llm_run_name}_predictions_{sample_size}.jsonl
-results_{dataset}_{sample_size}/runs/{run_id}/similarity/{dataset}_{llm_run_name}_similarity_{sample_size}.jsonl
-results_{dataset}_{sample_size}/runs/{run_id}/tables/
-results_{dataset}_{sample_size}/runs/{run_id}/failure_cases/
+data/interim/predictions/{dataset}_{llm_run_name}_predictions_{sample_size}.jsonl
+outputs/experiments/results_{dataset}_{sample_size}/runs/{run_id}/similarity/{dataset}_{llm_run_name}_similarity_{sample_size}.jsonl
+outputs/experiments/results_{dataset}_{sample_size}/runs/{run_id}/tables/
+outputs/experiments/results_{dataset}_{sample_size}/runs/{run_id}/failure_cases/
 ```
 
-`run_id: auto` 时，`scripts/02_compute_similarity.py` 每次生成新的时间戳 run，并写入 `results_{dataset}_{sample_size}/latest_run_id.txt`；`scripts/03_evaluate.py` 和 `scripts/04_visualize_results.py` 默认读取这个 latest run。若需要复跑并覆盖同一个实验目录，可以把 `project.run_id` 设置为固定值。
+`run_id: auto` 时，`scripts/pipeline/02_compute_similarity.py` 每次生成新的时间戳 run，并写入 `outputs/experiments/results_{dataset}_{sample_size}/latest_run_id.txt`；`scripts/pipeline/03_evaluate.py` 和 `scripts/pipeline/04_visualize_results.py` 默认读取这个 latest run。若需要复跑并覆盖同一个实验目录，可以把 `project.run_id` 设置为固定值。
 
 3. 生成预测（示例）：
 
 ```bash
-python scripts/01_generate_predictions.py
+python scripts/pipeline/01_generate_predictions.py
 ```
 
 4. 计算 similarity 并生成 `correct_label`（脚本会先打标再追加 similarity 字段）：
 
 ```bash
-python scripts/02_compute_similarity.py
+python scripts/pipeline/02_compute_similarity.py
 ```
 
 5. 评估并导出失败用例 / 指标：
 
 ```bash
-python scripts/03_evaluate.py
+python scripts/pipeline/03_evaluate.py
 ```
 
 6. 生成可视化图表：
 
 ```bash
-python scripts/04_visualize_results.py
+python scripts/pipeline/04_visualize_results.py
 ```
 
 生成图表包括 similarity distribution、ROC、PR 和 similarity-token-F1 correlation plot。
@@ -89,24 +90,24 @@ python scripts/04_visualize_results.py
 - `config.yaml` 控制数据集、embedding 模型、相似度阈值和 I/O 路径。默认评估标签字段为 `correct_label`（`evaluation.label_field`）。
 - `evaluation.reference_field: auto` 表示 NQ 使用抽取后的 `reference_answer`，其他数据集使用 `ground_truth`。如果要复现实验中的旧 NQ 设置，可显式设为 `ground_truth`。
 - 如果 `project.auto_paths: true`，脚本会忽略手写的 `prediction.input_file` / `similarity.input_file` / `output.*`，改为根据 `data.dataset` 自动生成一致路径。
-- 如果 `project.preserve_runs: true`，评估结果会写入 `results_{dataset}_{sample}/runs/{run_id}/`，历史 run 不会被覆盖。设置 `project.preserve_runs: false` 可恢复旧的固定路径输出。
+- 如果 `project.preserve_runs: true`，评估结果会写入 `outputs/experiments/results_{dataset}_{sample}/runs/{run_id}/`，历史 run 不会被覆盖。设置 `project.preserve_runs: false` 可恢复固定路径输出。
 - 如果关闭 `auto_paths`，代码会校验 `data.dataset` 与 `prediction.input_file` 是否匹配；不匹配会直接报错，防止 NQ/SciQ 结果混用。
-- 原始教师数据样式：`processed_data/{dataset}/merged_fb.json` 的每行 JSON 包含 `question` 和 `correct_answer`，加载时会创建 `ground_truth` 字段（参见 `src/data_loader.py`）。
+- 原始教师数据样式：`data/raw/{dataset}/merged_fb.json` 的每行 JSON 包含 `question` 和 `correct_answer`，加载时会创建 `ground_truth` 字段（参见 `src/data_loader.py`）。
 
 **输出与故障样例**
 - 相似度输出示例字段：`similarity_sentence_transformers_all_MiniLM_L6_v2` 或 `similarity_BAAI_bge_base_en_v1_5`（`/` 和 `-` 会被替换成 `_`）。
 - NQ 相似度输出会额外包含 `reference_answer`、`reference_answer_source` 和 `reference_evidence`，用于说明当前评估实际比较的答案文本和其来源证据句。
-- 失败样例会保存到 `results*/runs/{run_id}/failure_cases/`，并且评估表格存于 `results*/runs/{run_id}/tables/evaluation_results.csv`。
-- `results*/runs/{run_id}/tables/dataset_statistics.csv`：数据规模、正确标签比例、答案长度等。
-- `results*/runs/{run_id}/tables/baseline_ablation_results.csv`：baseline、embedding 和 hybrid method 对比。
-- `results*/runs/{run_id}/tables/case_studies.csv`：报告/海报可直接使用的 representative failure cases。
-- `results*/runs/{run_id}/tables/run_metadata.json`：记录本次实验实际使用的数据集、输入文件、输出目录、LLM 和 embedding 模型。
+- 失败样例会保存到 `outputs/experiments/results_*/runs/{run_id}/failure_cases/`，并且评估表格存于 `outputs/experiments/results_*/runs/{run_id}/tables/evaluation_results.csv`。
+- `outputs/experiments/results_*/runs/{run_id}/tables/dataset_statistics.csv`：数据规模、正确标签比例、答案长度等。
+- `outputs/experiments/results_*/runs/{run_id}/tables/baseline_ablation_results.csv`：baseline、embedding 和 hybrid method 对比。
+- `outputs/experiments/results_*/runs/{run_id}/tables/case_studies.csv`：报告/海报可直接使用的 representative failure cases。
+- `outputs/experiments/results_*/runs/{run_id}/tables/run_metadata.json`：记录本次实验实际使用的数据集、输入文件、输出目录、LLM 和 embedding 模型。
 
 **NQ/SciQ 结果混用问题**
-旧配置允许 `data.dataset` 写成 NQ 或 Wiki，但 `prediction.input_file` 仍指向 `processed_data/sciq/merged_fb.json`，这会导致 `results_nq` 里出现 SciQ failure cases。现在 `load_config()` 会自动解析并校验路径；真实 NQ 实验应重新生成到 `results_nq_5000/`，不要继续使用旧的 `results_nq/` 作为 Natural Questions 结论来源。
+旧配置允许 `data.dataset` 写成 NQ 或 Wiki，但 `prediction.input_file` 仍指向 `data/raw/sciq/merged_fb.json`，这会导致 NQ 结果目录里出现 SciQ failure cases。现在 `load_config()` 会自动解析并校验路径；真实 NQ 实验应重新生成到 `outputs/experiments/results_nq_5000/`，不要继续使用旧的混合结果作为 Natural Questions 结论来源。
 
 **与 guideline 的对应关系**
-- Part 1 Prediction and Representation：`scripts/01_generate_predictions.py`、`scripts/02_compute_similarity.py`
-- Part 2 Similarity Analysis：`scripts/03_evaluate.py`、`scripts/04_visualize_results.py`
-- Part 3 Empirical Study：`results*/tables/evaluation_results.csv`、`baseline_ablation_results.csv` 和所有 figures
-- Part 4 Failure Analysis and Improvement：`results*/failure_cases/`、`case_studies.csv`、`failures_analysis_and_improvement/`
+- Part 1 Prediction and Representation：`scripts/pipeline/01_generate_predictions.py`、`scripts/pipeline/02_compute_similarity.py`
+- Part 2 Similarity Analysis：`scripts/pipeline/03_evaluate.py`、`scripts/pipeline/04_visualize_results.py`
+- Part 3 Empirical Study：`outputs/experiments/results_*/tables/evaluation_results.csv`、`baseline_ablation_results.csv` 和所有 figures
+- Part 4 Failure Analysis and Improvement：`outputs/experiments/results_*/failure_cases/`、`case_studies.csv`、`outputs/analysis/failures_analysis_and_improvement/`

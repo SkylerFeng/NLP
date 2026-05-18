@@ -1,24 +1,24 @@
 # Part 4 Failure Analysis and Improvement
 
-This section addresses Part 4 of the project, **Semantic Similarity Measurement in Latent Space for LLM Prediction Evaluation**. The updated analysis covers the original failure analysis plus the executed multi-view ablations from Units 1-7 in `results_nq_500/runs/unit7_check`.
+本分析对应第一个选题的 Part 4：识别 embedding similarity 在哪些场景下不能作为 correctness proxy，解释失败原因，并纳入已执行的 Unit 1-7 multi-view ablation 结果。最终 NQ ablation 读取 `outputs/experiments/results_nq_500/runs/unit7_check`。
 
-Baseline analysis uses `results_nq_5000`, `results_sciq_500`, `results_simple_questions_wiki_500`, and `results_truthfulQA_500`. The NQ improvement path uses `results_nq_500` and the staged unit runs under `results_nq_500/runs/`.
+Baseline 使用 `outputs/experiments/results_nq_5000`、`outputs/experiments/results_sciq_500`、`outputs/experiments/results_simple_questions_wiki_500` 和 `outputs/experiments/results_truthfulQA_500`。NQ 改进路径使用 `outputs/experiments/results_nq_500` 以及 `outputs/experiments/results_nq_500/runs/` 下的 staged unit runs。
 
-## Failure Definition
+## Failure 定义
 
-For each prediction-reference pair, the pipeline computes a similarity or hybrid score and applies a threshold to predict correctness. A failure case is a disagreement between this threshold-based decision and the frozen automatic `correct_label`.
+对每个 prediction-reference pair，系统计算 similarity 或 hybrid score，再用阈值预测 correctness。failure case 定义为该阈值判断与冻结的自动标签 `correct_label` 不一致。
 
-- `high_similarity_wrong`: `correct_label = 0`, but the score is above the threshold.
-- `low_similarity_correct`: `correct_label = 1`, but the score is below the threshold.
+- `high_similarity_wrong`：`correct_label = 0`，但 score 高于阈值。
+- `low_similarity_correct`：`correct_label = 1`，但 score 低于阈值。
 
-This definition evaluates the **evaluator**, not only the LLM answer. Some failures are real similarity limitations; others expose strict automatic labels or reference-format artifacts.
+这个定义关注 evaluator 的失败，不一定都是 LLM 答错。有些 failure 是 similarity 的真实局限，有些是自动标签过严或 reference 格式问题。
 
-## Method and Annotation Protocol
-- Define failure cases as disagreement between similarity-threshold correctness and `correct_label`.
-- Analyze `high_similarity_wrong` and `low_similarity_correct` separately.
-- Perform sampled manual annotation of failure cases across dataset/model/failure-kind groups.
-- Compare the implemented NQ reference extraction against the original NQ first-500 subset.
-- Add staged NQ ablations for reference validation, prediction-span extraction, span-level similarity, factual conflict penalties, reduced multi-view hybrids, and guarded question-type calibration.
+## 方法与人工标注依据
+- 将 failure case 定义为 similarity threshold 判断与 `correct_label` 不一致。
+- 分别分析 `high_similarity_wrong` 和 `low_similarity_correct`。
+- 对 failure cases 做抽样人工标注。
+- 将已实现的 NQ reference extraction 与原始 NQ 前 500 条 subset 对比。
+- 增加 NQ staged ablations：reference validation、prediction-span extraction、span-level similarity、factual conflict penalties、reduced multi-view hybrids 和 guarded question-type calibration。
 
 | Category | Sampled | % | Annotation basis |
 | --- | --- | --- | --- |
@@ -26,7 +26,7 @@ This definition evaluates the **evaluator**, not only the LLM answer. Some failu
 | Low-similarity false negative | 78 | 24.7 | The answer is accepted or contained, but length/context mismatch lowers the embedding score. |
 | Automatic-label artifact | 66 | 20.9 | The automatic label is stricter than human semantic judgment, often due to paraphrase or surface form. |
 
-## Baseline Metrics
+## Baseline 指标
 ![ROC-AUC by dataset/model](figures/roc_auc_by_dataset_model.svg)
 
 | result_group | dataset | task_type | model | gap | fixed_f1 | best_threshold | best_f1 | roc_auc |
@@ -42,7 +42,7 @@ This definition evaluates the **evaluator**, not only the LLM answer. Some failu
 | implemented_improvement | results_nq_500 | long_form | MiniLM | 0.195 | 0.225 | 0.37 | 0.282 | 0.705 |
 | implemented_improvement | results_nq_500 | long_form | BGE | 0.128 | 0.235 | 0.79 | 0.286 | 0.711 |
 
-## Failure Counts
+## Failure Case 数量
 ![Failure counts](figures/failure_counts_by_dataset_model.svg)
 
 | result_group | dataset | model | failure_kind | count | avg_similarity | avg_distance |
@@ -68,7 +68,7 @@ This definition evaluates the **evaluator**, not only the LLM answer. Some failu
 | implemented_improvement | results_nq_500 | BGE | low_similarity_correct | 5 | 0.448 | 0.552 |
 | implemented_improvement | results_nq_500 | MiniLM | low_similarity_correct | 24 | 0.342 | 0.658 |
 
-## Manual Annotation
+## 人工标注分析
 ![Manual annotation categories](figures/manual_annotation_categories.svg)
 
 | result_group | dataset | model | failure_kind | human_category | human_type | sampled_count | percentage |
@@ -98,7 +98,7 @@ This definition evaluates the **evaluator**, not only the LLM answer. Some failu
 | implemented_improvement | results_nq_500 | BGE | high_similarity_wrong | semantic_similarity_limitation | extracted_reference_needs_entailment_check | 4 | 13.3 |
 | implemented_improvement | results_nq_500 | MiniLM | high_similarity_wrong | automatic_label_artifact | extracted_reference_close_paraphrase | 4 | 36.4 |
 
-## Representative Failure Cases
+## 代表性 Failure Cases
 
 | Dataset | Kind | Type | Question | Reference | Prediction | Sim | Human rationale |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -113,8 +113,8 @@ This definition evaluates the **evaluator**, not only the LLM answer. Some failu
 | results_nq_500 | high_similarity_wrong | extracted_reference_needs_entailment_check | how long does it take for rigor mortis to set in in animals | Starting between two and six hours following death, rigor mortis begins wit... | Rigor mortis typically sets in within 3-6 hours after an animal's death. | 0.822 | Similar dates or entities remain ambiguous after extraction. |
 | results_nq_500 | low_similarity_correct | answer_containment_or_context_dilution | who plays hiccup in how to train your dragon 2 | He | Jay Baruchel plays Hiccup in How to Train Your Dragon 2. | 0.466 | Correct answer is present or accepted, but extra context lowers similarity. |
 
-## Implemented Improvement: NQ Reference Extraction
-`src/reference_answer.py` extracts a shorter `reference_answer` from NQ passages by selecting an evidence sentence and applying who/when/where/number heuristics. This directly targets the short-prediction vs. long-passage mismatch.
+## 已实现改进：NQ Reference Extraction
+`src/reference_answer.py` 从 NQ 长 passage 中抽取更短的 `reference_answer`：先选择 evidence sentence，再根据 who/when/where/number 等问题类型抽取答案。这针对的是 short prediction 与 long passage reference 的表示错配。
 
 ![NQ reference extraction improvement](figures/nq_reference_extraction_improvement.svg)
 
@@ -125,11 +125,11 @@ This definition evaluates the **evaluator**, not only the LLM answer. Some failu
 | original_passage_reference_subset_500 | BGE | 500 | 17 | 483 | -0.031 | 0.021 | 0.57 | 0.073 | 0.391 |
 | implemented_reference_extraction_500 | BGE | 500 | 48 | 452 | 0.128 | 0.235 | 0.79 | 0.286 | 0.711 |
 
-The extraction changes the NQ signal direction: MiniLM ROC-AUC moves from 0.269 to 0.705, and BGE moves from 0.391 to 0.711 on the comparable 500-example subset. This makes embedding similarity useful enough to improve, but not reliable enough to serve as a final factual judge.
+该 extraction 改变了 NQ 的 signal direction：在可比 500 条 subset 上，MiniLM ROC-AUC 从 0.269 到 0.705，BGE 从 0.391 到 0.711。这说明 embedding similarity 已经可以被改进使用，但仍不能作为最终 factual judge。
 
-## New NQ Ablations
+## 新增 NQ Ablations
 
-The plan was executed through Unit 7. Unit 5 was explicitly deferred because Unit 4 left too few unresolved symbolic number/date/entity conflicts to justify a separate factual-view embedding pass. Unit 6 therefore uses reduced positive weights over sentence similarity, span similarity, and overlap, then subtracts factual conflict penalties.
+计划已执行到 Unit 7。Unit 5 被 gate defer，因为 Unit 4 后剩余 high-similarity-wrong 已不主要是未解决的 number/date/entity symbolic conflict。Unit 6 因此采用 reduced score：结合 sentence similarity、span similarity、overlap，并减去 factual conflict penalty。
 
 ![NQ multi-view ablation PR-AUC](figures/nq_multi_view_ablation_pr_auc.svg)
 
@@ -158,7 +158,7 @@ The plan was executed through Unit 7. Unit 5 was explicitly deferred because Uni
 | unit6 | MiniLM | Unit 6 span-guarded hybrid | 0.725 | 0.796 | 0.791 | 6 | 4 | Best global fixed-threshold operating point on NQ 500. |
 | unit6 | MiniLM | Unit 6 span-ranked hybrid | 0.640 | 0.812 | 0.800 | 18 | 4 | Best ranking-oriented operating point by PR-AUC and best-threshold F1. |
 
-## Supporting Diagnostics
+## 支持性诊断
 
 | area | metric | baseline_reference | v2_reference | interpretation |
 | --- | --- | --- | --- | --- |
@@ -175,7 +175,7 @@ The plan was executed through Unit 7. Unit 5 was explicitly deferred because Uni
 
 ## Question-Type Reporting and Guarded Calibration
 
-Question-type calibration is reported as guarded analysis, not as a wholesale replacement for the global threshold. The guard requires enough examples, positives, negatives, nonzero score variance, and 5-fold stratified cross-validation.
+Question-type calibration 只作为 guarded analysis 报告，不直接替换全局阈值。guard 条件包括足够的 examples、positive、negative、非零 score variance，以及 5-fold stratified cross-validation。
 
 | model | score_variant | question_type | support | global_fixed_f1 | cv_threshold_mean | cv_fixed_f1 | delta_f1 | calibration_status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -202,16 +202,16 @@ Skipped/inherited buckets:
 | number | num_examples<50 | 4 |
 | yes_no | num_examples<50 | 4 |
 
-## Final Interpretation
-- SciQ and SimpleQuestions-Wiki show large positive gaps and high ROC-AUC, so embedding similarity is useful for short-form QA after threshold tuning.
-- Original NQ fails because whole-passage similarity measures topical relatedness rather than answer equivalence.
-- Reference extraction and validation fix the largest NQ representation mismatch, but reference validation alone does not materially change ranking.
-- Prediction answer-span extraction and span-max similarity provide the largest recall/ranking gain. Raw span-max is too permissive, so it must be paired with factual conflict penalties.
-- Unit 4 conflict penalties reduce same-topic factual false positives. For BGE, conflict-adjusted span-max reaches PR-AUC 0.818 and best F1 0.812 while reducing fixed-threshold high-similarity-wrong relative to raw span-max.
-- Unit 6 has two valid operating points: `span_ranked` is best for ranking (BGE PR-AUC 0.845, best F1 0.812), while `span_guarded` is best for the global fixed threshold (MiniLM fixed F1 0.725, BGE fixed F1 0.701).
-- Unit 7 shows question-type thresholds can help `when`, `where`, and `who`, especially for BGE `span_ranked`, but can also lower F1 for already strong global settings. It should be reported as guarded calibration rather than adopted blindly.
-- Full-dataset numbers still measure agreement with `correct_label`. The manual audit shows automatic-label artifacts remain, so claims about true QA correctness require a representative human-labeled set.
-- Final conclusion: embedding latent-space similarity is a useful screening and ranking signal when made answer-focused and conflict-aware, but it is not a standalone factual correctness evaluator. The final evaluator should be multi-view and should route ambiguous cases to human labels or entailment verification.
+## 最终解释
+- SciQ 和 SimpleQuestions-Wiki 有较大正向 gap 和高 ROC-AUC，说明 embedding similarity 在短答案任务中有效。
+- 原始 NQ 明显失败，因为整段 passage similarity 衡量的是主题相关性，而不是答案等价性。
+- Reference extraction 和 validation 解决了最大的 NQ representation mismatch，但 reference validation 单独使用时不会显著改变排序。
+- Prediction answer-span extraction 和 span-max similarity 提供最大 recall/ranking gain。Raw span-max 太宽松，因此需要 factual conflict penalty 配合。
+- Unit 4 conflict penalty 能降低同主题事实错误的 false positive。BGE conflict-adjusted span-max 达到 PR-AUC 0.818、best F1 0.812，并相对 raw span-max 降低 fixed-threshold high-similarity-wrong。
+- Unit 6 有两个合理 operating points：`span_ranked` 最适合 ranking（BGE PR-AUC 0.845，best F1 0.812），`span_guarded` 最适合全局固定阈值（MiniLM fixed F1 0.725，BGE fixed F1 0.701）。
+- Unit 7 说明 question-type thresholds 对 `when`、`where`、`who` 有帮助，尤其是 BGE `span_ranked`；但对已经很强的 global setting 也可能降低 F1，所以只能作为 guarded calibration 报告。
+- Full-dataset 指标仍然衡量与 `correct_label` 的一致性。人工标注显示 automatic-label artifacts 仍存在，因此关于真实 QA correctness 的强结论需要代表性 human-labeled set。
+- 最终结论：embedding latent-space similarity 在 answer-focused 和 conflict-aware 后是有效的 screening/ranking signal，但不是 standalone factual correctness evaluator。最终 evaluator 应该是 multi-view pipeline，并对 ambiguous cases 引入人工标注或 entailment verification。
 
 ## Reproducibility
-Run `python scripts/analyze_part4_strict.py` from the project root. Summary tables are in `failures_analysis_and_improvement/summary_tables/`, figures are in `failures_analysis_and_improvement/figures/`, and refreshed reports are `part4_report.md` and `part4_report.zh.md`.
+在项目根目录运行 `python scripts/analysis/analyze_part4_strict.py`。汇总表格在 `outputs/analysis/failures_analysis_and_improvement/summary_tables/`，图片在 `outputs/analysis/failures_analysis_and_improvement/figures/`，报告为 `part4_report.md` 和 `part4_report.zh.md`。
