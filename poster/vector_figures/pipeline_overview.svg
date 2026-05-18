@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="550" viewBox="0 0 1000 550">
+<title>Pipeline Overview</title>
+<rect width="1000" height="550" fill="#f5f7fa"/>
+<rect x="18" y="18" width="964" height="514" rx="10" fill="#ffffff" stroke="#cfd8e0"/>
+<text x="500.0" y="52" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#00467f">Pipeline Overview</text>
+<rect x="90" y="92" width="260" height="52" rx="8" fill="#ffffff" stroke="#00467f" stroke-width="3"/>
+<text x="220.0" y="125.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Datasets</text>
+<line x1="220" y1="144" x2="220" y2="164" stroke="#00467f" stroke-width="3"/>
+<polygon points="220,164 208,157 208,171" fill="#00467f"/>
+<rect x="90" y="166" width="260" height="52" rx="8" fill="#ffffff" stroke="#00467f" stroke-width="3"/>
+<text x="220.0" y="187.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">LLM</text>
+<text x="220.0" y="211.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Predictions</text>
+<line x1="220" y1="218" x2="220" y2="238" stroke="#00467f" stroke-width="3"/>
+<polygon points="220,238 208,231 208,245" fill="#00467f"/>
+<rect x="90" y="240" width="260" height="52" rx="8" fill="#ffffff" stroke="#00467f" stroke-width="3"/>
+<text x="220.0" y="261.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Automatic</text>
+<text x="220.0" y="285.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Labels</text>
+<line x1="220" y1="292" x2="220" y2="312" stroke="#00467f" stroke-width="3"/>
+<polygon points="220,312 208,305 208,319" fill="#00467f"/>
+<rect x="90" y="314" width="260" height="52" rx="8" fill="#ffffff" stroke="#00467f" stroke-width="3"/>
+<text x="220.0" y="335.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Embedding</text>
+<text x="220.0" y="359.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Similarity</text>
+<line x1="220" y1="366" x2="220" y2="386" stroke="#00467f" stroke-width="3"/>
+<polygon points="220,386 208,379 208,393" fill="#00467f"/>
+<rect x="90" y="388" width="260" height="52" rx="8" fill="#ffffff" stroke="#00467f" stroke-width="3"/>
+<text x="220.0" y="409.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Metrics</text>
+<text x="220.0" y="433.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">+ Plots</text>
+<line x1="220" y1="440" x2="220" y2="460" stroke="#00467f" stroke-width="3"/>
+<polygon points="220,460 208,453 208,467" fill="#00467f"/>
+<rect x="90" y="462" width="260" height="52" rx="8" fill="#ffffff" stroke="#00467f" stroke-width="3"/>
+<text x="220.0" y="483.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Failure</text>
+<text x="220.0" y="507.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Analysis</text>
+<rect x="430" y="230" width="260" height="58" rx="8" fill="#e9f6f6" stroke="#006f73" stroke-width="3"/>
+<text x="560.0" y="254.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">EM / F1 /</text>
+<text x="560.0" y="278.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Containment</text>
+<line x1="430" y1="259" x2="350" y2="259" stroke="#006f73" stroke-width="3"/>
+<polygon points="350,259 338,252 338,266" fill="#006f73"/>
+<rect x="430" y="304" width="260" height="58" rx="8" fill="#e9f6f6" stroke="#006f73" stroke-width="3"/>
+<text x="560.0" y="328.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">MiniLM /</text>
+<text x="560.0" y="352.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">BGE</text>
+<line x1="430" y1="333" x2="350" y2="333" stroke="#006f73" stroke-width="3"/>
+<polygon points="350,333 338,326 338,340" fill="#006f73"/>
+<rect x="430" y="452" width="260" height="58" rx="8" fill="#e9f6f6" stroke="#006f73" stroke-width="3"/>
+<text x="560.0" y="476.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">NQ Reference</text>
+<text x="560.0" y="500.0" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#242a32">Extraction</text>
+<line x1="430" y1="481" x2="350" y2="481" stroke="#006f73" stroke-width="3"/>
+<polygon points="350,481 338,474 338,488" fill="#006f73"/>
+<text x="585" y="130" font-family="Arial" font-size="22" font-weight="700" fill="#00467f">Automated end-to-end evaluation</text>
+<text x="585" y="166" font-family="Arial" font-size="18" fill="#242a32">Predictions, labels, similarities, metrics, plots.</text>
+</svg>
